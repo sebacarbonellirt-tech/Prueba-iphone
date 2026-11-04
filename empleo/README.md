@@ -41,6 +41,9 @@ Los cursos en sí. Sin mostrar tu cara:
 Súbelos a **Hotmart** (entrega el curso sola y cobra en pesos) y pega el link de cada uno
 en el campo `pago`.
 
+> **Importante:** este repositorio es público. No subas aquí los PDF ni las plantillas
+> de los cursos pagados: cualquiera podría descargarlos gratis. Guárdalos solo en Hotmart.
+
 ## Antes de publicar
 
 - Cambia el WhatsApp de prueba (`56900000000`) por el tuyo.
