@@ -172,6 +172,10 @@ footer.site .wrap { padding-block: 28px 120px; display: grid; gap: 10px; color: 
 .buybar .t b { display: block; color: var(--ink); font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .wa { position: fixed; z-index: 8; right: max(16px, calc(env(safe-area-inset-right, 0px) + 12px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 84px); width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; background: #25D366; color: #fff; box-shadow: var(--shadow); text-decoration: none; }
 .wa svg { width: 28px; height: 28px; }
+.consent { position: fixed; z-index: 12; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -8px 24px rgba(0,0,0,.12); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.consent .wrap { display: grid; gap: 10px; padding-block: 14px; font-size: .9rem; }
+.consent .ctas .btn { flex: 1 1 120px; min-height: 42px; }
+.privacy { font-size: .78rem; opacity: .7; }
 .wa { transition: opacity .2s ease, transform .2s ease; }
 .wa.away { opacity: 0; transform: scale(.6); pointer-events: none; }
 @media (max-width: 360px) { .fields { grid-template-columns: 1fr; } }
@@ -192,6 +196,10 @@ const CONFIG = {
   moneda: "CLP",
   idioma: "es-CL",
   whatsapp: "56900000000",          // 56 + 9 + tus 8 dígitos
+
+  // Pixel de Meta (Instagram/Facebook Ads). Pega aquí tu ID de 15-16 dígitos.
+  // Solo se activa si el visitante acepta las cookies.
+  metaPixel: "",
   email: "hola@lapega.cl",
 
   oferta: { texto: "Precio de lanzamiento en el Kit completo", termina: "2026-11-30T23:59:00" },
@@ -238,7 +246,7 @@ const CONFIG = {
       precio: 9990, antes: 0,
       etiqueta: "", destacado: false,
       incluye: ["Perfil de LinkedIn paso a paso, desde el celular", "Guía de Laborum, Computrabajo, Trabajando.com y BNE", "Get on Board para pegas de tecnología", "Mensajes listos para escribirle a reclutadores"],
-      modulos: ["Titular y extracto que aparecen en búsquedas", "Activar «Open to work» sin que se entere tu jefe", "Portales chilenos y alertas", "OMIL y Bolsa Nacional de Empleo", "Mensajes a reclutadores"],
+      modulos: ["Titular y extracto que aparecen en búsquedas", "Activar «Open to work» solo para reclutadores", "Portales chilenos y alertas", "OMIL y Bolsa Nacional de Empleo", "Mensajes a reclutadores"],
       formato: "PDF + audio · descarga inmediata",
       pago: ""
     },
@@ -342,6 +350,7 @@ const CONFIG = {
           <button class="btn" type="submit">Enviármelo</button>
         </form>
         <p class="msg" id="leadMsg" hidden></p>
+        <p class="privacy">Uso tu email solo para enviarte el checklist y consejos de empleo. Puedes darte de baja cuando quieras.</p>
       </div>
     </div>
   </section>
@@ -370,6 +379,13 @@ const CONFIG = {
   </div>
 </footer>
 
+<div class="consent" id="consent" role="dialog" aria-label="Cookies" hidden>
+  <div class="wrap">
+    <p>Uso cookies para saber qué anuncios funcionan. No vendo tus datos.</p>
+    <div class="ctas"><button class="btn" type="button" id="ckYes">Aceptar</button><button class="btn ghost" type="button" id="ckNo">No, gracias</button></div>
+  </div>
+</div>
+
 <div class="buybar" id="buybar">
   <div class="wrap">
     <div class="t"><b id="bbTitle"></b><span id="bbPrice"></span></div>
@@ -389,8 +405,37 @@ const CONFIG = {
   const fmt = new Intl.NumberFormat(C.idioma, { style: "currency", currency: C.moneda, maximumFractionDigits: 0 });
   const money = (n) => fmt.format(Math.round(n));
   const waLink = (t) => C.whatsapp ? "https://wa.me/" + C.whatsapp + "?text=" + encodeURIComponent(t) : "#";
-  const buyLink = (p) => p.pago || waLink("Hola, quiero comprar «" + p.titulo + "» (" + money(p.precio) + "). ¿Cómo pago?");
+  const buyLink = (p) => p.pago ? withSrc(p.pago) : waLink("Hola, quiero comprar «" + p.titulo + "» (" + money(p.precio) + "). ¿Cómo pago?");
   const track = (n, d) => { try { window.plausible && window.plausible(n, { props: d }); window.gtag && window.gtag("event", n, d); } catch (e) {} };
+
+  /* ---------- Pixel de Meta con consentimiento ---------- */
+  const store = { get: (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} } };
+  const META = { InitiateCheckout: "click_comprar", Lead: "lead" };
+  let fbReady = false;
+  const loadPixel = () => {
+    if (fbReady || !C.metaPixel) return;
+    fbReady = true;
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+    fbq("init", C.metaPixel);
+    fbq("track", "PageView");
+  };
+  const fb = (ev, data, custom) => { try { if (fbReady && window.fbq) fbq(custom ? "trackCustom" : "track", ev, data || {}); } catch (e) {} };
+  if (C.metaPixel) {
+    const ck = store.get("lapega-cookies");
+    if (ck === "si") loadPixel();
+    else if (ck !== "no") {
+      $("consent").hidden = false;
+      $("ckYes").onclick = () => { store.set("lapega-cookies", "si"); $("consent").hidden = true; loadPixel(); };
+      $("ckNo").onclick = () => { store.set("lapega-cookies", "no"); $("consent").hidden = true; };
+    }
+  }
+  // Pasa la campaña del anuncio al link de Hotmart (parámetro src) para ver qué anuncio vendió
+  const qs = new URLSearchParams(location.search);
+  const campaign = qs.get("utm_campaign") || qs.get("utm_source") || "";
+  const withSrc = (url) => {
+    if (!campaign || !/hotmart\./i.test(url)) return url;
+    try { const u = new URL(url); u.searchParams.set("src", campaign); return u.toString(); } catch (e) { return url; }
+  };
 
   $("brandName").textContent = C.marca;
   $("brandFoot").textContent = C.marca;
@@ -458,6 +503,9 @@ const CONFIG = {
     $(id).addEventListener("input", (e) => { fmtInput(e.target); calc(); });
   });
   ["afp", "contrato"].forEach((id) => $(id).addEventListener("change", calc));
+  // Avisa a Meta (una vez) que la persona usó la calculadora: sirve para retargeting
+  let usedCalc = false;
+  $("calculadora").addEventListener("input", () => { if (!usedCalc) { usedCalc = true; track("uso_calculadora", {}); fb("UsoCalculadora", {}, true); } });
   $("modeLiq").addEventListener("click", () => setMode("liq"));
   $("modeBru").addEventListener("click", () => setMode("bru"));
   calc();
@@ -475,7 +523,11 @@ const CONFIG = {
       '<div class="meta"><span>' + esc(p.formato || "") + "</span>" + (off ? "<span>Ahorras " + money(p.antes - p.precio) + "</span>" : "") + "</div>" +
       '<a class="btn block" data-buy="' + esc(p.id) + '" href="' + esc(buyLink(p)) + '" target="_blank" rel="noopener">Comprar por ' + money(p.precio) + "</a></article>";
   }).join("");
-  document.addEventListener("click", (e) => { const a = e.target.closest("[data-buy]"); if (a) track("click_comprar", { producto: a.dataset.buy }); });
+  document.addEventListener("click", (e) => { const a = e.target.closest("[data-buy]"); if (a) {
+    track("click_comprar", { producto: a.dataset.buy });
+    const p = prods.find((x) => x.id === a.dataset.buy);
+    fb("InitiateCheckout", p ? { content_name: p.titulo, content_ids: [p.id], value: p.precio, currency: C.moneda } : {});
+  } });
 
   const star = prods.find((p) => p.destacado) || prods[0];
   if (star) {
@@ -520,7 +572,7 @@ const CONFIG = {
       const r = await fetch(C.regalo.formulario, { method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" }, body: JSON.stringify({ email, origen: "checklist-cv" }) });
       if (!r.ok) throw new Error(r.status);
       msg.textContent = "Listo. Revisa tu bandeja de entrada (y la carpeta de promociones).";
-      input.value = ""; track("lead", {});
+      input.value = ""; track("lead", {}); fb("Lead", { content_name: "checklist-cv" });
     } catch (err) { msg.textContent = "No se pudo enviar. Revisa tu conexión e inténtalo otra vez."; }
   });
 

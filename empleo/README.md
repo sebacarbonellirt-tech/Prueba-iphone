@@ -48,6 +48,19 @@ en el campo `pago`.
 - La pregunta frecuente «¿Me garantiza trabajo?» responde que no. Déjala así:
   prometer un trabajo seguro puede considerarse publicidad engañosa (Ley del Consumidor, Sernac).
 
+## Publicidad en Instagram y Facebook
+
+La tienda ya trae el **Pixel de Meta**. Pega tu ID en `CONFIG.metaPixel` y quedará activo.
+- Solo se activa si el visitante acepta las cookies (aviso abajo en la pantalla). Así
+  cumples con la nueva Ley de Protección de Datos Personales (Ley 21.719), que rige desde diciembre de 2026.
+- Envía a Meta estos eventos: `PageView`, `UsoCalculadora` (para retargeting), `Lead`
+  (email del checklist) e `InitiateCheckout` (clic en comprar).
+- La compra (`Purchase`) la informa Hotmart: pega el mismo Pixel en tu producto de Hotmart.
+- Si el link del anuncio trae `utm_campaign`, la tienda la pasa a Hotmart como `src`.
+  Así ves en Hotmart qué anuncio generó cada venta.
+
+Anuncios, guiones de video y plan de campañas: `marketing/anuncios-lapega.md`.
+
 ## Cómo conseguir alumnos sin mostrar tu cara
 
 - **Carruseles en Instagram y TikTok:** «5 errores de CV que te descartan», «Bruto vs. líquido».
