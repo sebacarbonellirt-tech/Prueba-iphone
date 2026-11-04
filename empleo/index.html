@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LaPega Cursos</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Cursos prácticos para conseguir trabajo en Chile: CV, LinkedIn, entrevistas y pretensión de renta. Incluye calculadora de sueldo líquido gratis.">
+<meta name="theme-color" content="#F1F4F3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1513" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="LaPega">
+<meta property="og:title" content="LaPega · Consigue trabajo en Chile">
+<meta property="og:description" content="CV, LinkedIn, entrevistas y pretensión de renta. Calculadora de sueldo líquido gratis.">
+<meta property="og:type" content="website">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100,700;100,800;112,800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: columna tipo app (máx. 640px). Gancho gratis (calculadora) arriba, luego cursos con temario desplegable y barra de compra fija. */
+:root {
+  --bg: #F1F4F3;
+  --surface: #FFFFFF;
+  --ink: #0F1F1C;
+  --muted: #536461;
+  --line: #D3DDDA;
+  --accent: #0B6B58;
+  --accent-ink: #FFFFFF;
+  --tag: #B9F0D8;
+  --tag-ink: #0A3B30;
+  --warn: #9A5B00;
+  --shadow: 0 1px 2px rgba(15,31,28,.06), 0 8px 24px rgba(15,31,28,.06);
+  --f-display: "Archivo", "Avenir Next Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "Public Sans", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C1513; --surface: #14211E; --ink: #E4EFEC; --muted: #93A9A4; --line: #24332F;
+    --accent: #4FD1B0; --accent-ink: #04221B; --tag: #8FE3C3; --tag-ink: #062A21; --warn: #F2B35B;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0C1513; --surface: #14211E; --ink: #E4EFEC; --muted: #93A9A4; --line: #24332F;
+  --accent: #4FD1B0; --accent-ink: #04221B; --tag: #8FE3C3; --tag-ink: #062A21; --warn: #F2B35B;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+a { color: inherit; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.wrap { max-width: 640px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.2rem, 9vw, 3.2rem); line-height: .98; font-weight: 800; font-stretch: 112%; letter-spacing: -.02em; }
+h2 { font-size: 1.65rem; line-height: 1.05; font-weight: 800; font-stretch: 100%; }
+h3 { font-size: 1.2rem; line-height: 1.15; font-weight: 700; font-stretch: 100%; }
+p { margin: 0; }
+.eyebrow { font: 600 .72rem/1 var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 800 1.1rem/1 var(--f-display); font-stretch: 112%; }
+.logo { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); font: 800 1rem/1 var(--f-display); flex: none; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 20px; border-radius: 12px; border: 0; background: var(--accent); color: var(--accent-ink); font: 700 1rem/1 var(--f-body); text-decoration: none; cursor: pointer; transition: transform .12s ease, filter .12s ease; -webkit-tap-highlight-color: transparent; }
+.btn:active { transform: scale(.97); }
+.btn:hover { filter: brightness(1.08); }
+.btn.sm { min-height: 38px; padding: 0 14px; font-size: .9rem; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+.btn.block { width: 100%; }
+
+.offer { background: var(--ink); color: var(--bg); }
+.offer .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 12px; padding-block: 9px; font-weight: 600; font-size: .9rem; text-align: center; }
+.offer .clock { font: 600 .9rem/1 var(--f-mono); font-variant-numeric: tabular-nums; color: var(--tag); }
+
+.hero .wrap { display: grid; gap: 18px; padding-block: 34px 26px; }
+.hero .lede { font-size: 1.1rem; color: var(--muted); max-width: 34em; }
+.hero h1 mark { background: var(--tag); color: var(--tag-ink); padding: 0 .1em; border-radius: 6px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.points { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.points li { padding: 6px 11px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); font-size: .85rem; font-weight: 600; }
+.ctas { display: flex; flex-wrap: wrap; gap: 10px; }
+
+section.block .wrap { display: grid; gap: 16px; padding-block: 28px; }
+.head { display: grid; gap: 6px; }
+.head p { color: var(--muted); }
+
+/* Calculadora */
+.calc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: grid; gap: 16px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--bg); border-radius: 12px; padding: 4px; gap: 4px; }
+.seg button { min-height: 40px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font: 600 .9rem/1.2 var(--f-body); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { display: grid; gap: 6px; min-width: 0; }
+.field.full { grid-column: 1 / -1; }
+.field label { font-size: .8rem; font-weight: 600; color: var(--muted); }
+.field input, .field select { width: 100%; min-height: 46px; padding: 0 12px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); font: 500 1rem var(--f-body); }
+.field input { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.result { display: grid; gap: 4px; padding: 16px; border-radius: 12px; background: var(--tag); color: var(--tag-ink); }
+.result .big { font: 600 2rem/1.1 var(--f-mono); font-variant-numeric: tabular-nums; }
+.result .lbl { font-size: .85rem; font-weight: 600; }
+.liq { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.liq td { padding: 7px 0; border-bottom: 1px dashed var(--line); }
+.liq td:last-child { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.liq tr.total td { border-bottom: 0; font-weight: 700; padding-top: 10px; }
+.note { font-size: .78rem; color: var(--muted); }
+
+/* Cursos */
+.products { display: grid; gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 20px; display: grid; gap: 14px; }
+.card.featured { border: 2px solid var(--accent); }
+.card .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.card .row > div { min-width: 0; }
+.badge { display: inline-block; margin-bottom: 8px; padding: 4px 9px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); font: 700 .7rem/1.2 var(--f-body); letter-spacing: .08em; text-transform: uppercase; }
+.card .desc { color: var(--muted); font-size: .95rem; }
+.price { flex: none; position: relative; background: var(--tag); color: var(--tag-ink); padding: 8px 12px 8px 22px; border-radius: 4px 10px 10px 4px; text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%); }
+.price::before { content: ""; position: absolute; left: 10px; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%; background: var(--surface); }
+.price .now { display: block; font-size: 1.2rem; font-weight: 600; line-height: 1.1; }
+.price .was { display: block; font-size: .78rem; text-decoration: line-through; opacity: .65; }
+.includes { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; font-size: .95rem; }
+.includes li { display: grid; grid-template-columns: 20px 1fr; gap: 8px; }
+.includes li::before { content: ""; width: 16px; height: 16px; margin-top: 4px; border-radius: 4px; background: color-mix(in srgb, var(--accent) 16%, transparent); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.syllabus { border-top: 1px solid var(--line); }
+.syllabus summary { cursor: pointer; list-style: none; padding: 12px 0 2px; font-weight: 600; font-size: .9rem; color: var(--accent); display: flex; justify-content: space-between; }
+.syllabus summary::-webkit-details-marker { display: none; }
+.syllabus summary::after { content: "+"; font-family: var(--f-mono); }
+.syllabus[open] summary::after { content: "–"; }
+.syllabus ol { margin: 8px 0 0; padding-left: 1.3em; display: grid; gap: 4px; font-size: .9rem; color: var(--muted); }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .8rem; color: var(--muted); }
+
+.lead { background: var(--ink); color: var(--bg); border-radius: var(--r); padding: 22px; display: grid; gap: 14px; }
+.lead p { opacity: .8; }
+.lead form { display: flex; flex-wrap: wrap; gap: 10px; }
+.lead input { flex: 1 1 200px; min-width: 0; min-height: 48px; padding: 0 16px; border-radius: 12px; border: 0; font: 500 1rem var(--f-body); background: var(--bg); color: var(--ink); }
+.lead .btn { background: var(--tag); color: var(--tag-ink); }
+.lead .msg { font-size: .9rem; }
+
+.quotes { display: grid; gap: 12px; }
+.quote { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 8px; margin: 0; }
+.quote footer { font-size: .85rem; color: var(--muted); }
+
+.faq { display: grid; gap: 8px; }
+.faq details { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; }
+.faq summary { cursor: pointer; list-style: none; padding: 15px 0; font-weight: 600; display: flex; justify-content: space-between; gap: 12px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font: 500 1.3rem/1 var(--f-mono); color: var(--muted); }
+.faq details[open] summary::after { content: "–"; }
+.faq details p { padding: 0 0 15px; color: var(--muted); }
+
+footer.site .wrap { padding-block: 28px 120px; display: grid; gap: 10px; color: var(--muted); font-size: .85rem; }
+.pay { display: flex; flex-wrap: wrap; gap: 6px; }
+.pay span { padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: .75rem; font-weight: 600; }
+
+.buybar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -8px 24px rgba(0,0,0,.08); padding-bottom: env(safe-area-inset-bottom, 0px); transform: translateY(110%); transition: transform .25s ease; }
+.buybar.show { transform: none; }
+.buybar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; }
+.buybar .t { min-width: 0; font-size: .85rem; color: var(--muted); }
+.buybar .t b { display: block; color: var(--ink); font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wa { position: fixed; z-index: 8; right: max(16px, calc(env(safe-area-inset-right, 0px) + 12px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 84px); width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; background: #25D366; color: #fff; box-shadow: var(--shadow); text-decoration: none; }
+.wa svg { width: 28px; height: 28px; }
+.wa { transition: opacity .2s ease, transform .2s ease; }
+.wa.away { opacity: 0; transform: scale(.6); pointer-events: none; }
+@media (max-width: 360px) { .fields { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<script>
+/* ============================================================
+   ✏️  EDITA SOLO ESTE BLOQUE PARA PERSONALIZAR TU TIENDA
+   Desde el iPhone: github.com → empleo/index.html → lápiz ✏️ → Commit.
+   ============================================================ */
+const CONFIG = {
+  marca: "LaPega",
+  titular: "Consigue <mark>la pega</mark> que buscas en Chile",
+  subtitulo: "Cursos cortos para armar un CV que pase los filtros, aparecer en LinkedIn y responder bien la pregunta de la pretensión de renta. Todo en PDF, plantillas y audio: lo estudias en el metro.",
+  puntos: ["Sin videos de cámara", "Ejemplos de empresas chilenas", "Acceso inmediato", "Garantía de 7 días"],
+  moneda: "CLP",
+  idioma: "es-CL",
+  whatsapp: "56900000000",          // 56 + 9 + tus 8 dígitos
+  email: "hola@lapega.cl",
+
+  oferta: { texto: "Precio de lanzamiento en el Kit completo", termina: "2026-11-30T23:59:00" },
+
+  // Valores para la calculadora. Revísalos cada mes: UTM en sii.cl, UF en sii.cl,
+  // comisiones AFP en spensiones.cl, topes imponibles en spensiones.cl.
+  calc: {
+    utm: 72000,              // valor aproximado, actualízalo
+    uf: 40500,               // valor aproximado, actualízalo
+    topeAfpSaludUF: 87.8,    // tope imponible AFP y salud
+    topeCesantiaUF: 131.9,   // tope imponible seguro de cesantía
+    afp: { "Uno": 0.46, "Modelo": 0.58, "PlanVital": 1.16, "Habitat": 1.27, "Capital": 1.44, "Cuprum": 1.44, "Provida": 1.45 }
+  },
+
+  // CURSOS. "pago" = tu link de Hotmart, Mercado Pago o Flow.
+  // Si está vacío, el botón abre WhatsApp con el pedido escrito.
+  productos: [
+    {
+      id: "kit-completo",
+      titulo: "Kit completo: de postular a firmar contrato",
+      desc: "Los tres cursos juntos y un módulo extra para revisar tu contrato y entender tu primera liquidación de sueldo.",
+      precio: 24990, antes: 32970,
+      etiqueta: "Más conveniente", destacado: true,
+      incluye: ["Los 3 cursos de abajo", "Extra: tipos de contrato y qué revisar antes de firmar", "Extra: cómo leer tu liquidación (AFP, salud, impuesto)", "Actualizaciones gratis"],
+      modulos: ["CV que pasa los filtros", "LinkedIn y portales de empleo", "Entrevista y pretensión de renta", "Contrato indefinido, plazo fijo y honorarios", "Tu primera liquidación de sueldo"],
+      formato: "5 módulos · PDF, plantillas y audio",
+      pago: ""
+    },
+    {
+      id: "cv",
+      titulo: "CV chileno que pasa los filtros",
+      desc: "Arma en una tarde un currículum de una página que los sistemas de selección (ATS) leen bien y que un reclutador entiende en 10 segundos.",
+      precio: 9990, antes: 0,
+      etiqueta: "", destacado: false,
+      incluye: ["Plantilla editable en Word y Canva", "Ejemplos por rubro: retail, salud, oficina, logística", "Carta de presentación lista para adaptar", "Checklist de 15 errores que hacen que te descarten"],
+      modulos: ["Qué mira un reclutador en Chile", "Estructura de una página", "Palabras clave del aviso y filtros ATS", "Experiencia sin experiencia: prácticas y pegas cortas", "Carta de presentación"],
+      formato: "PDF + plantillas · descarga inmediata",
+      pago: ""
+    },
+    {
+      id: "linkedin",
+      titulo: "LinkedIn y portales: que te llamen",
+      desc: "Configura tu perfil para que los reclutadores te encuentren y usa bien los portales chilenos con alertas, sin postular a ciegas.",
+      precio: 9990, antes: 0,
+      etiqueta: "", destacado: false,
+      incluye: ["Perfil de LinkedIn paso a paso, desde el celular", "Guía de Laborum, Computrabajo, Trabajando.com y BNE", "Get on Board para pegas de tecnología", "Mensajes listos para escribirle a reclutadores"],
+      modulos: ["Titular y extracto que aparecen en búsquedas", "Activar «Open to work» sin que se entere tu jefe", "Portales chilenos y alertas", "OMIL y Bolsa Nacional de Empleo", "Mensajes a reclutadores"],
+      formato: "PDF + audio · descarga inmediata",
+      pago: ""
+    },
+    {
+      id: "entrevista",
+      titulo: "Entrevista y pretensión de renta",
+      desc: "Las preguntas que más se repiten en entrevistas en Chile, con respuestas modelo, y cómo decir cuánto quieres ganar sin quedarte corto.",
+      precio: 12990, antes: 0,
+      etiqueta: "", destacado: false,
+      incluye: ["40 preguntas típicas con respuestas modelo", "Cómo responder «¿cuál es tu pretensión de renta?»", "Renta bruta vs. líquida, explicado simple", "Guion para negociar una oferta"],
+      modulos: ["Antes de la entrevista: investigar la empresa", "Entrevista por videollamada y presencial", "Preguntas difíciles", "Pretensión de renta y negociación", "Seguimiento después de la entrevista"],
+      formato: "PDF + audio · descarga inmediata",
+      pago: ""
+    }
+  ],
+
+  regalo: {
+    titulo: "Gratis: checklist de 15 errores que descartan tu CV",
+    texto: "Déjame tu email y te lo envío. Además recibes avisos de ferias laborales y consejos para postular.",
+    formulario: ""   // URL de formspree.io (https://formspree.io/f/xxxx)
+  },
+
+  testimonios: [
+    { texto: "Cambié el CV con la plantilla y en dos semanas me llamaron de tres empresas.", autor: "Ejemplo · Javiera S.", rol: "Asistente administrativa, Maipú" },
+    { texto: "Siempre pedía muy poco. Con la calculadora y el guion pedí bien y me aceptaron.", autor: "Ejemplo · Matías C.", rol: "Analista, Providencia" },
+    { texto: "Llegué a Chile hace un año. La guía de portales me ahorró meses.", autor: "Ejemplo · Daniela R.", rol: "Técnico en enfermería, Santiago" }
+  ],
+
+  faq: [
+    { p: "¿Me garantiza que voy a encontrar trabajo?", r: "No. Nadie puede garantizarlo honestamente. Lo que sí hacen los cursos es que tu CV, tu perfil y tus entrevistas queden al nivel que piden las empresas, para que te llamen más." },
+    { p: "¿Cómo recibo los cursos?", r: "Al pagar te llega el acceso al email al instante. Son PDF, plantillas y audios que puedes ver desde el celular." },
+    { p: "¿Sirve si soy extranjero?", r: "Sí. El CV, LinkedIn y las entrevistas funcionan igual. Para temas de visa y permisos de trabajo revisa siempre la información oficial en serviciomigraciones.cl." },
+    { p: "¿Qué medios de pago aceptan?", r: "Tarjeta de crédito, débito Redcompra, Mercado Pago o transferencia. Precios en pesos chilenos." },
+    { p: "¿Hay garantía?", r: "Tienes 7 días. Si no te sirve, te devuelvo el dinero." }
+  ],
+
+  mediosDePago: ["Visa", "Mastercard", "Redcompra", "Mercado Pago", "Transferencia"]
+};
+</script>
+
+<div class="offer" id="offer" hidden><div class="wrap"><span id="offerText"></span><span class="clock" id="offerClock"></span></div></div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#inicio"><span class="logo" id="logo"></span><span id="brandName"></span></a>
+    <a class="btn sm" href="#cursos">Ver cursos</a>
+  </div>
+</header>
+
+<main id="inicio">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">Cursos de empleo · Chile</span>
+      <h1 id="headline"></h1>
+      <p class="lede" id="lede"></p>
+      <ul class="points" id="points"></ul>
+      <div class="ctas">
+        <a class="btn" href="#cursos">Ver cursos</a>
+        <a class="btn ghost" href="#calculadora">Calcular mi sueldo líquido</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="calculadora">
+    <div class="wrap">
+      <div class="head"><span class="eyebrow">Herramienta gratis</span><h2>Calculadora de sueldo líquido</h2><p>Descubre cuánto te llega a la cuenta, o cuánto pedir bruto cuando te pregunten tu pretensión de renta.</p></div>
+      <div class="calc">
+        <div class="seg" role="group" aria-label="Tipo de cálculo">
+          <button type="button" id="modeLiq" aria-pressed="true">Bruto → líquido</button>
+          <button type="button" id="modeBru" aria-pressed="false">¿Cuánto pedir?</button>
+        </div>
+        <div class="fields">
+          <div class="field full"><label for="monto" id="montoLbl">Sueldo bruto mensual</label><input id="monto" inputmode="numeric" autocomplete="off" value="1.000.000"></div>
+          <div class="field"><label for="afp">AFP</label><select id="afp"></select></div>
+          <div class="field"><label for="contrato">Contrato</label><select id="contrato"><option value="indef">Indefinido</option><option value="plazo">Plazo fijo</option></select></div>
+          <div class="field full"><label for="noimp">Colación y movilización (no imponible)</label><input id="noimp" inputmode="numeric" autocomplete="off" value="0"></div>
+        </div>
+        <div class="result"><span class="lbl" id="resLbl">Te llega a la cuenta (aprox.)</span><span class="big" id="resBig">$0</span></div>
+        <table class="liq" id="liqTable"></table>
+        <p class="note" id="calcNote"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="cursos">
+    <div class="wrap">
+      <div class="head"><span class="eyebrow">Cursos</span><h2>Elige por dónde empezar</h2><p>Pago seguro, acceso inmediato y garantía de 7 días.</p></div>
+      <div class="products" id="products"></div>
+    </div>
+  </section>
+
+  <section class="block" id="regalo">
+    <div class="wrap">
+      <div class="lead">
+        <span class="eyebrow" style="color:inherit;opacity:.7">Gratis</span>
+        <h2 id="leadTitle"></h2>
+        <p id="leadText"></p>
+        <form id="leadForm" novalidate>
+          <label for="leadEmail" style="position:absolute;left:-9999px">Tu email</label>
+          <input id="leadEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="tu@email.com" required>
+          <button class="btn" type="submit">Enviármelo</button>
+        </form>
+        <p class="msg" id="leadMsg" hidden></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="opiniones">
+    <div class="wrap">
+      <div class="head"><span class="eyebrow">Opiniones</span><h2>Quienes ya lo usaron</h2></div>
+      <div class="quotes" id="quotes"></div>
+    </div>
+  </section>
+
+  <section class="block" id="preguntas">
+    <div class="wrap">
+      <div class="head"><span class="eyebrow">Preguntas frecuentes</span><h2>Antes de comprar</h2></div>
+      <div class="faq" id="faq"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="pay" id="payMethods"></div>
+    <p id="contact"></p>
+    <p id="installHint">En iPhone: toca Compartir y luego «Agregar a pantalla de inicio» para tenerla como app.</p>
+    <p>© <span id="year"></span> <span id="brandFoot"></span> · Santiago, Chile</p>
+  </div>
+</footer>
+
+<div class="buybar" id="buybar">
+  <div class="wrap">
+    <div class="t"><b id="bbTitle"></b><span id="bbPrice"></span></div>
+    <a class="btn" id="bbBtn" href="#cursos" target="_blank" rel="noopener">Comprar</a>
+  </div>
+</div>
+
+<a class="wa" id="wa" href="#" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp" hidden>
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.5-.3Z"/></svg>
+</a>
+
+<script>
+(function () {
+  const C = CONFIG;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const fmt = new Intl.NumberFormat(C.idioma, { style: "currency", currency: C.moneda, maximumFractionDigits: 0 });
+  const money = (n) => fmt.format(Math.round(n));
+  const waLink = (t) => C.whatsapp ? "https://wa.me/" + C.whatsapp + "?text=" + encodeURIComponent(t) : "#";
+  const buyLink = (p) => p.pago || waLink("Hola, quiero comprar «" + p.titulo + "» (" + money(p.precio) + "). ¿Cómo pago?");
+  const track = (n, d) => { try { window.plausible && window.plausible(n, { props: d }); window.gtag && window.gtag("event", n, d); } catch (e) {} };
+
+  $("brandName").textContent = C.marca;
+  $("brandFoot").textContent = C.marca;
+  $("logo").textContent = C.marca.charAt(0);
+  $("year").textContent = new Date().getFullYear();
+  $("headline").innerHTML = C.titular;
+  $("lede").textContent = C.subtitulo;
+  $("points").innerHTML = (C.puntos || []).map((x) => "<li>" + esc(x) + "</li>").join("");
+
+  /* ---------- Calculadora de sueldo líquido (Chile) ---------- */
+  const K = C.calc;
+  // Impuesto Único de Segunda Categoría, tabla mensual en UTM: [desde, tasa, rebaja]
+  const TRAMOS = [[0, 0, 0], [13.5, .04, .54], [30, .08, 1.74], [50, .135, 4.49], [70, .23, 11.14], [90, .304, 17.8], [120, .35, 23.32], [310, .4, 38.82]];
+  $("afp").innerHTML = Object.keys(K.afp).map((a) => '<option value="' + esc(a) + '">' + esc(a) + "</option>").join("");
+  $("afp").value = "Modelo";
+  const parse = (v) => Number(String(v).replace(/[^\d]/g, "")) || 0;
+  const liquido = (bruto, afp, contrato) => {
+    const imp = Math.min(bruto, K.topeAfpSaludUF * K.uf);
+    const dAfp = imp * (10 + K.afp[afp]) / 100;
+    const dSalud = imp * 0.07;
+    const dCes = contrato === "indef" ? Math.min(bruto, K.topeCesantiaUF * K.uf) * 0.006 : 0;
+    const baseUTM = (bruto - dAfp - dSalud - dCes) / K.utm;
+    let t = TRAMOS[0];
+    for (const tr of TRAMOS) if (baseUTM > tr[0]) t = tr;
+    const dImp = Math.max(0, (baseUTM * t[1] - t[2]) * K.utm);
+    return { bruto, dAfp, dSalud, dCes, dImp, liq: bruto - dAfp - dSalud - dCes - dImp };
+  };
+  let mode = "liq";
+  const setMode = (m) => {
+    mode = m;
+    $("modeLiq").setAttribute("aria-pressed", m === "liq");
+    $("modeBru").setAttribute("aria-pressed", m === "bru");
+    $("montoLbl").textContent = m === "liq" ? "Sueldo bruto mensual" : "Líquido que quieres recibir";
+    calc();
+  };
+  const calc = () => {
+    const monto = parse($("monto").value), noimp = parse($("noimp").value);
+    const afp = $("afp").value, ct = $("contrato").value;
+    let r;
+    if (mode === "liq") r = liquido(monto, afp, ct);
+    else {
+      // Busca el bruto que deja el líquido deseado (sin contar lo no imponible)
+      const target = Math.max(0, monto - noimp);
+      let lo = 0, hi = Math.max(1e6, target * 3);
+      for (let i = 0; i < 60; i++) { const mid = (lo + hi) / 2; liquido(mid, afp, ct).liq < target ? (lo = mid) : (hi = mid); }
+      r = liquido(Math.ceil(hi / 1000) * 1000, afp, ct);
+    }
+    const total = r.liq + noimp;
+    $("resLbl").textContent = mode === "liq" ? "Te llega a la cuenta (aprox.)" : "Pide como pretensión de renta (bruto)";
+    $("resBig").textContent = money(mode === "liq" ? total : r.bruto);
+    const rows = [
+      ["Sueldo bruto", money(r.bruto)],
+      ["AFP " + afp + " (10% + " + String(K.afp[afp]).replace(".", ",") + "%)", "− " + money(r.dAfp)],
+      ["Salud (7%)", "− " + money(r.dSalud)],
+      ["Seguro de cesantía" + (ct === "indef" ? " (0,6%)" : ""), "− " + money(r.dCes)],
+      ["Impuesto único", "− " + money(r.dImp)]
+    ];
+    if (noimp) rows.push(["Colación y movilización", "+ " + money(noimp)]);
+    $("liqTable").innerHTML = rows.map((x) => "<tr><td>" + esc(x[0]) + "</td><td>" + x[1] + "</td></tr>").join("") +
+      '<tr class="total"><td>Líquido</td><td>' + money(total) + "</td></tr>";
+    $("calcNote").textContent = "Estimación referencial con UTM " + money(K.utm) + " y UF " + money(K.uf) + ", salud Fonasa 7% y sin otros descuentos. Si tienes Isapre o descuentos voluntarios, tu líquido será menor.";
+  };
+  const fmtInput = (el) => { const n = parse(el.value); el.value = n ? n.toLocaleString("es-CL") : "0"; };
+  ["monto", "noimp"].forEach((id) => {
+    $(id).addEventListener("input", (e) => { fmtInput(e.target); calc(); });
+  });
+  ["afp", "contrato"].forEach((id) => $(id).addEventListener("change", calc));
+  $("modeLiq").addEventListener("click", () => setMode("liq"));
+  $("modeBru").addEventListener("click", () => setMode("bru"));
+  calc();
+
+  /* ---------- Cursos ---------- */
+  const prods = C.productos || [];
+  $("products").innerHTML = prods.map((p) => {
+    const off = p.antes && p.antes > p.precio ? Math.round((1 - p.precio / p.antes) * 100) : 0;
+    return '<article class="card' + (p.destacado ? " featured" : "") + '" id="p-' + esc(p.id) + '">' +
+      '<div class="row"><div>' + (p.etiqueta ? '<span class="badge">' + esc(p.etiqueta) + "</span>" : "") + "<h3>" + esc(p.titulo) + "</h3></div>" +
+      '<div class="price"><span class="now">' + money(p.precio) + "</span>" + (off ? '<span class="was">' + money(p.antes) + "</span>" : "") + "</div></div>" +
+      '<p class="desc">' + esc(p.desc) + "</p>" +
+      '<ul class="includes">' + (p.incluye || []).map((i) => "<li>" + esc(i) + "</li>").join("") + "</ul>" +
+      ((p.modulos || []).length ? '<details class="syllabus"><summary>Ver temario (' + p.modulos.length + " módulos)</summary><ol>" + p.modulos.map((m) => "<li>" + esc(m) + "</li>").join("") + "</ol></details>" : "") +
+      '<div class="meta"><span>' + esc(p.formato || "") + "</span>" + (off ? "<span>Ahorras " + money(p.antes - p.precio) + "</span>" : "") + "</div>" +
+      '<a class="btn block" data-buy="' + esc(p.id) + '" href="' + esc(buyLink(p)) + '" target="_blank" rel="noopener">Comprar por ' + money(p.precio) + "</a></article>";
+  }).join("");
+  document.addEventListener("click", (e) => { const a = e.target.closest("[data-buy]"); if (a) track("click_comprar", { producto: a.dataset.buy }); });
+
+  const star = prods.find((p) => p.destacado) || prods[0];
+  if (star) {
+    $("bbTitle").textContent = star.titulo;
+    $("bbPrice").textContent = money(star.precio) + (star.antes > star.precio ? " · antes " + money(star.antes) : "");
+    $("bbBtn").href = buyLink(star);
+    $("bbBtn").dataset.buy = star.id;
+    const bar = $("buybar"), hero = document.querySelector(".hero"), list = $("cursos"), calcSec = $("calculadora");
+    const inView = (el) => { const r = el.getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; };
+    const update = () => {
+      bar.classList.toggle("show", hero.getBoundingClientRect().bottom < 0 && !inView(list) && !inView(calcSec));
+      $("wa").classList.toggle("away", inView(calcSec));
+    };
+    addEventListener("scroll", update, { passive: true });
+    update();
+  }
+
+  if (C.oferta && C.oferta.texto && C.oferta.termina) {
+    const end = new Date(C.oferta.termina).getTime();
+    const pad = (n) => String(n).padStart(2, "0");
+    const tick = () => {
+      const left = end - Date.now();
+      if (!(left > 0)) { $("offer").hidden = true; return false; }
+      const d = Math.floor(left / 864e5), h = Math.floor(left / 36e5) % 24, m = Math.floor(left / 6e4) % 60, s = Math.floor(left / 1e3) % 60;
+      $("offerClock").textContent = (d ? d + "d " : "") + pad(h) + ":" + pad(m) + ":" + pad(s);
+      return true;
+    };
+    $("offerText").textContent = C.oferta.texto + " · termina en";
+    if (tick()) { $("offer").hidden = false; setInterval(tick, 1000); }
+  }
+
+  $("leadTitle").textContent = C.regalo.titulo;
+  $("leadText").textContent = C.regalo.texto;
+  $("leadForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const input = $("leadEmail"), msg = $("leadMsg"), email = input.value.trim();
+    msg.hidden = false;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = "Revisa el email: debe tener el formato nombre@dominio.cl."; input.focus(); return; }
+    if (!C.regalo.formulario) { msg.textContent = "Falta conectar el formulario: pega tu URL de Formspree en CONFIG.regalo.formulario."; return; }
+    msg.textContent = "Enviando…";
+    try {
+      const r = await fetch(C.regalo.formulario, { method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" }, body: JSON.stringify({ email, origen: "checklist-cv" }) });
+      if (!r.ok) throw new Error(r.status);
+      msg.textContent = "Listo. Revisa tu bandeja de entrada (y la carpeta de promociones).";
+      input.value = ""; track("lead", {});
+    } catch (err) { msg.textContent = "No se pudo enviar. Revisa tu conexión e inténtalo otra vez."; }
+  });
+
+  if ((C.testimonios || []).length) {
+    $("quotes").innerHTML = C.testimonios.map((q) => '<blockquote class="quote"><p>' + esc(q.texto) + "</p><footer><b>" + esc(q.autor) + "</b> · " + esc(q.rol) + "</footer></blockquote>").join("");
+  } else { $("opiniones").hidden = true; }
+  $("faq").innerHTML = (C.faq || []).map((f) => "<details><summary>" + esc(f.p) + "</summary><p>" + esc(f.r) + "</p></details>").join("");
+  $("payMethods").innerHTML = (C.mediosDePago || []).map((m) => "<span>" + esc(m) + "</span>").join("");
+  $("contact").innerHTML = C.email ? 'Contacto: <span style="user-select:all">' + esc(C.email) + "</span>" : "";
+  if (C.whatsapp) { $("wa").href = waLink("Hola, vengo de " + C.marca + ". Tengo una consulta sobre los cursos."); $("wa").hidden = false; }
+  if (navigator.standalone || matchMedia("(display-mode: standalone)").matches) $("installHint").hidden = true;
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+})();
+</script>
+</body>
+</html>

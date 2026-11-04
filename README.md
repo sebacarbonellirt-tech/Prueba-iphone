@@ -4,6 +4,9 @@ Una tienda web lista para cobrar, pensada para manejarse **100 % desde el iPhone
 Vendes productos digitales (guías, plantillas, cursos) y recibes propinas,
 sin pagar suscripciones ni comisiones de plataforma de tienda.
 
+> **Otra tienda en este repositorio:** [`empleo/`](empleo/) es **LaPega**, cursos para
+> conseguir trabajo en Chile, con calculadora de sueldo líquido gratis. Ver `empleo/README.md`.
+
 ## Qué incluye
 
 | Parte | Para qué sirve |
@@ -85,6 +88,7 @@ conectar un dominio propio (`tumarca.cl`, se compra en nic.cl).
 
 ```
 index.html            la tienda (edita el bloque CONFIG)
+empleo/               LaPega: tienda de cursos de empleo en Chile
 manifest.json         datos de la app instalable
 sw.js                 caché para abrir rápido y sin conexión
 icons/                iconos de la app (SVG y PNG)
