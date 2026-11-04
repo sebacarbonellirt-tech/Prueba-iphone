@@ -1,7 +1,7 @@
 # Vitrina: tu tienda digital para vender desde el iPhone
 
 Una tienda web lista para cobrar, pensada para manejarse **100 % desde el iPhone**.
-Vendes productos digitales (guías, plantillas, cursos, asesorías) y recibes propinas,
+Vendes productos digitales (guías, plantillas, cursos) y recibes propinas,
 sin pagar suscripciones ni comisiones de plataforma de tienda.
 
 ## Qué incluye
@@ -63,10 +63,11 @@ conectar un dominio propio (`tumarca.com`).
 
 ## Cómo ganar dinero con ella
 
-1. **Escalera de precios.** Regalo gratis → producto barato (9) → producto medio (15) → asesoría (39+).
-   La mayoría compra primero lo barato; los que confían suben al resto.
+1. **Escalera de precios.** Regalo gratis → producto barato (9) → producto medio (15).
+   La mayoría compra primero lo barato; los que confían suben al siguiente.
 2. **Tráfico.** Pon el link en la bio de Instagram y TikTok. Cada video termina con
-   «link en mi perfil». Graba con el iPhone usando los mismos guiones que vendes.
+   «link en mi perfil». Graba con el iPhone sin mostrar tu cara
+   (voz en off, manos o grabación de pantalla) usando los mismos guiones que vendes.
 3. **Urgencia real.** Usa la cuenta regresiva solo con ofertas que de verdad terminan.
 4. **La lista de emails es tuya.** Las redes cambian; tu lista no. Escríbele cada semana.
 5. **Mide.** Los botones de compra ya envían el evento `click_comprar` si agregas
