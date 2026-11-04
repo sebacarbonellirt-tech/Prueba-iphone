@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vitrina Tienda Digital</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Guías, plantillas y asesorías para crecer en redes y vender online.">
+<meta name="theme-color" content="#F2F3F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1018" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Vitrina">
+<meta property="og:title" content="Vitrina · Tienda digital">
+<meta property="og:description" content="Guías, plantillas y asesorías para crecer en redes y vender online.">
+<meta property="og:type" content="website">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: una columna estrecha tipo app (máx. 640px), tarjetas de producto con etiqueta de precio, barra de compra fija abajo en móvil. */
+:root {
+  --bg: #F2F3F7;
+  --surface: #FFFFFF;
+  --ink: #12152A;
+  --muted: #5A5F7A;
+  --line: #DCDFEA;
+  --accent: #2340D9;
+  --accent-ink: #FFFFFF;
+  --tag: #FFD84D;
+  --tag-ink: #1B1A10;
+  --ok: #138A5B;
+  --shadow: 0 1px 2px rgba(18,21,42,.06), 0 8px 24px rgba(18,21,42,.06);
+  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Figtree", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r: 18px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1018; --surface: #171A26; --ink: #E9EBF4; --muted: #9AA0BC; --line: #2A2E40;
+    --accent: #8095FF; --accent-ink: #0B0E1F; --tag: #FFD84D; --tag-ink: #1B1A10; --ok: #4FD39C;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1018; --surface: #171A26; --ink: #E9EBF4; --muted: #9AA0BC; --line: #2A2E40;
+  --accent: #8095FF; --accent-ink: #0B0E1F; --tag: #FFD84D; --tag-ink: #1B1A10; --ok: #4FD39C;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 16px/1.55 var(--f-body);
+  -webkit-font-smoothing: antialiased;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+a { color: inherit; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+.wrap {
+  max-width: 640px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -.01em; }
+h1 { font-size: clamp(2.1rem, 8vw, 3.1rem); line-height: 1.02; font-weight: 800; }
+h2 { font-size: 1.6rem; line-height: 1.1; font-weight: 700; }
+h3 { font-size: 1.2rem; line-height: 1.2; font-weight: 700; }
+p { margin: 0; }
+.eyebrow { font: 600 .75rem/1 var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+/* Cabecera */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 700 1.05rem/1 var(--f-display); }
+.avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); font: 800 .95rem/1 var(--f-display); flex: none; overflow: hidden; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 20px; border-radius: 999px; border: 0; background: var(--accent); color: var(--accent-ink); font: 700 1rem/1 var(--f-body); text-decoration: none; cursor: pointer; transition: transform .12s ease, filter .12s ease; -webkit-tap-highlight-color: transparent; }
+.btn:active { transform: scale(.97); }
+.btn:hover { filter: brightness(1.08); }
+.btn.sm { min-height: 38px; padding: 0 14px; font-size: .9rem; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+.btn.block { width: 100%; }
+
+/* Oferta */
+.offer { background: var(--tag); color: var(--tag-ink); }
+.offer .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 12px; padding-block: 9px; font-weight: 600; font-size: .9rem; text-align: center; }
+.offer .clock { font: 700 .9rem/1 var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* Hero */
+.hero .wrap { display: grid; gap: 18px; padding-block: 36px 28px; }
+.hero .lede { font-size: 1.1rem; color: var(--muted); max-width: 34em; }
+.hero h1 mark { background: var(--tag); color: var(--tag-ink); padding: 0 .12em; border-radius: 6px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.proof { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--muted); font-size: .9rem; }
+.proof b { color: var(--ink); font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.socials { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: .85rem; font-weight: 600; text-decoration: none; }
+
+section.block .wrap { display: grid; gap: 16px; padding-block: 28px; }
+.head { display: grid; gap: 6px; }
+.head p { color: var(--muted); }
+
+/* Productos */
+.products { display: grid; gap: 16px; }
+.card { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 20px; display: grid; gap: 14px; }
+.card.featured { border: 2px solid var(--accent); }
+.card .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.card .row > div { min-width: 0; }
+.badge { display: inline-block; margin-bottom: 8px; padding: 4px 9px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); font: 700 .7rem/1.2 var(--f-body); letter-spacing: .08em; text-transform: uppercase; }
+.card .desc { color: var(--muted); font-size: .95rem; margin-top: 6px; }
+/* Etiqueta de precio con agujero, como las de una tienda */
+.price { flex: none; position: relative; background: var(--tag); color: var(--tag-ink); padding: 8px 12px 8px 22px; border-radius: 4px 10px 10px 4px; text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%); }
+.price::before { content: ""; position: absolute; left: 10px; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%; background: var(--surface); }
+.price .now { display: block; font-size: 1.25rem; font-weight: 700; line-height: 1.1; }
+.price .was { display: block; font-size: .78rem; text-decoration: line-through; opacity: .65; }
+.price.free .now { font-size: 1.05rem; }
+.includes { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; font-size: .95rem; }
+.includes li { display: grid; grid-template-columns: 20px 1fr; gap: 8px; }
+.includes li::before { content: ""; width: 18px; height: 18px; margin-top: 3px; border-radius: 50%; background: color-mix(in srgb, var(--ok) 18%, transparent); box-shadow: inset 0 0 0 1.5px var(--ok); -webkit-mask: none; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .8rem; color: var(--muted); }
+
+/* Lead magnet */
+.lead { background: var(--ink); color: var(--bg); border-radius: var(--r); padding: 22px; display: grid; gap: 14px; }
+.lead p { opacity: .8; }
+.lead form { display: flex; flex-wrap: wrap; gap: 10px; }
+.lead input { flex: 1 1 200px; min-width: 0; min-height: 48px; padding: 0 16px; border-radius: 999px; border: 0; font: 500 1rem var(--f-body); background: var(--bg); color: var(--ink); }
+.lead .btn { background: var(--tag); color: var(--tag-ink); }
+.lead .msg { font-size: .9rem; }
+
+/* Propinas */
+.tips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.tip { display: grid; gap: 2px; justify-items: center; padding: 14px 8px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--surface); text-decoration: none; text-align: center; }
+.tip b { font: 700 1.2rem/1.1 var(--f-mono); font-variant-numeric: tabular-nums; }
+.tip span { font-size: .8rem; color: var(--muted); }
+.tip:hover { border-color: var(--accent); }
+
+/* Testimonios */
+.quotes { display: grid; gap: 12px; }
+.quote { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 8px; }
+.quote p { font-size: .98rem; }
+.quote footer { font-size: .85rem; color: var(--muted); }
+.stars { color: #E2A400; letter-spacing: 2px; font-size: .9rem; }
+
+/* FAQ */
+.faq { display: grid; gap: 8px; }
+.faq details { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; }
+.faq summary { cursor: pointer; list-style: none; padding: 15px 0; font-weight: 600; display: flex; justify-content: space-between; gap: 12px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font: 500 1.3rem/1 var(--f-mono); color: var(--muted); }
+.faq details[open] summary::after { content: "–"; }
+.faq details p { padding: 0 0 15px; color: var(--muted); }
+
+footer.site .wrap { padding-block: 28px 120px; display: grid; gap: 10px; color: var(--muted); font-size: .85rem; }
+.pay { display: flex; flex-wrap: wrap; gap: 6px; }
+.pay span { padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: .75rem; font-weight: 600; }
+
+/* Barra de compra fija (móvil) */
+.buybar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -8px 24px rgba(0,0,0,.08); padding-bottom: env(safe-area-inset-bottom, 0px); transform: translateY(110%); transition: transform .25s ease; }
+.buybar.show { transform: none; }
+.buybar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; }
+.buybar .t { min-width: 0; font-size: .85rem; color: var(--muted); }
+.buybar .t b { display: block; color: var(--ink); font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.wa { position: fixed; z-index: 8; right: max(16px, calc(env(safe-area-inset-right, 0px) + 12px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 84px); width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; background: #25D366; color: #fff; box-shadow: var(--shadow); text-decoration: none; }
+.wa svg { width: 28px; height: 28px; }
+
+.toast { position: fixed; z-index: 11; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 90px); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: .9rem; font-weight: 600; max-width: calc(100% - 32px); text-align: center; }
+.install { font-size: .85rem; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<script>
+/* ============================================================
+   ✏️  EDITA SOLO ESTE BLOQUE PARA PERSONALIZAR TU TIENDA
+   Todo lo que ves en la página sale de aquí.
+   Desde el iPhone: github.com → este archivo → lápiz ✏️ → Commit.
+   ============================================================ */
+const CONFIG = {
+  marca: "Vitrina",                 // Nombre de tu marca
+  iniciales: "V",                   // Se muestran si no pones foto
+  foto: "",                          // URL de tu foto (opcional)
+  titular: "Aprende a <mark>vender online</mark> desde tu iPhone",
+  subtitulo: "Guías, plantillas y asesorías prácticas para crecer en redes y convertir seguidores en clientes. Sin humo, con pasos concretos.",
+  moneda: "USD",                    // USD, EUR, ARS, MXN, CLP, COP...
+  idioma: "es",
+
+  // Prueba social (pon números reales)
+  prueba: [
+    { n: "1.240", t: "alumnos" },
+    { n: "4,9★", t: "valoración" },
+    { n: "38k", t: "seguidores" }
+  ],
+
+  // Contacto. WhatsApp con código de país, sin + ni espacios.
+  whatsapp: "5491100000000",
+  email: "hola@tumarca.com",
+  redes: [
+    { nombre: "Instagram", url: "https://instagram.com/" },
+    { nombre: "TikTok", url: "https://tiktok.com/" },
+    { nombre: "YouTube", url: "https://youtube.com/" }
+  ],
+
+  // Oferta con fecha límite (déjala vacía "" para ocultarla)
+  oferta: { texto: "Lanzamiento: 30% off en todo", termina: "2026-11-30T23:59:00" },
+
+  // PRODUCTOS. "pago" = tu link de cobro (Mercado Pago, Stripe, Hotmart, Lemon Squeezy, Gumroad...).
+  // Si "pago" está vacío, el botón abre WhatsApp con el pedido ya escrito.
+  productos: [
+    {
+      id: "guia-reels",
+      titulo: "Guía: 30 Reels que venden",
+      desc: "Ideas de guion listas para grabar con el iPhone, con gancho, desarrollo y llamada a la acción.",
+      precio: 9, antes: 15,
+      etiqueta: "Más vendido", destacado: true,
+      incluye: ["PDF de 42 páginas", "30 guiones con plantilla de gancho", "Calendario de 30 días", "Acceso inmediato"],
+      formato: "PDF · descarga inmediata",
+      pago: ""
+    },
+    {
+      id: "pack-plantillas",
+      titulo: "Pack de 50 plantillas para Canva",
+      desc: "Carruseles, historias y portadas editables. Cambias colores y textos en minutos desde el móvil.",
+      precio: 15, antes: 25,
+      etiqueta: "", destacado: false,
+      incluye: ["50 diseños editables", "Funciona con Canva gratis", "Guía de uso en video"],
+      formato: "Link de Canva · descarga inmediata",
+      pago: ""
+    },
+    {
+      id: "asesoria",
+      titulo: "Asesoría 1:1 de 45 minutos",
+      desc: "Revisamos tu perfil, tu oferta y tus precios. Sales con un plan de contenido para 4 semanas.",
+      precio: 39, antes: 0,
+      etiqueta: "Cupos limitados", destacado: false,
+      incluye: ["Videollamada de 45 min", "Auditoría de tu perfil", "Plan de 4 semanas en PDF", "Grabación de la sesión"],
+      formato: "Videollamada · agenda tras el pago",
+      pago: ""
+    }
+  ],
+
+  // Imán de clientes: regalo gratis a cambio del email.
+  // Crea un formulario gratis en formspree.io y pega aquí su URL (https://formspree.io/f/xxxx).
+  regalo: {
+    titulo: "Regalo: 5 ganchos que paran el scroll",
+    texto: "Déjame tu email y te lo envío gratis. Además recibes un consejo práctico por semana.",
+    formulario: ""
+  },
+
+  // Propinas / "Invítame un café". Deja la lista vacía [] para ocultar.
+  propinas: [
+    { monto: 3, texto: "Un café", pago: "" },
+    { monto: 5, texto: "Un desayuno", pago: "" },
+    { monto: 10, texto: "Un almuerzo", pago: "" }
+  ],
+
+  testimonios: [
+    { texto: "Con los guiones de la guía pasé de 200 a 3.000 views por reel en dos semanas.", autor: "Ejemplo · Camila R.", rol: "Pastelería casera" },
+    { texto: "Las plantillas me ahorran horas. Publico todos los días sin pensar en el diseño.", autor: "Ejemplo · Diego M.", rol: "Entrenador personal" },
+    { texto: "La asesoría me ayudó a subir mis precios sin perder clientes.", autor: "Ejemplo · Lucía P.", rol: "Fotógrafa" }
+  ],
+
+  faq: [
+    { p: "¿Cómo recibo el producto?", r: "Al pagar recibes el acceso en tu email al instante. Si algo falla, escríbeme por WhatsApp y te lo envío a mano." },
+    { p: "¿Qué medios de pago aceptan?", r: "Tarjeta de crédito y débito, Apple Pay y, según tu país, Mercado Pago o transferencia." },
+    { p: "¿Sirve si empiezo de cero?", r: "Sí. Todo está pensado para hacerse desde el teléfono, sin programas ni conocimientos previos." },
+    { p: "¿Hay garantía?", r: "Tienes 7 días de garantía. Si no te sirve, te devuelvo el dinero sin preguntas." }
+  ],
+
+  mediosDePago: ["Visa", "Mastercard", "Apple Pay", "Mercado Pago", "PayPal"]
+};
+</script>
+
+<div class="offer" id="offer" hidden><div class="wrap"><span id="offerText"></span><span class="clock" id="offerClock"></span></div></div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#inicio"><span class="avatar" id="avatar"></span><span id="brandName"></span></a>
+    <a class="btn sm" href="#productos">Ver productos</a>
+  </div>
+</header>
+
+<main id="inicio">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">Tienda digital</span>
+      <h1 id="headline"></h1>
+      <p class="lede" id="lede"></p>
+      <div class="proof" id="proof"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <a class="btn" href="#productos" id="heroCta">Empezar ahora</a>
+        <a class="btn ghost" href="#regalo">Quiero el regalo gratis</a>
+      </div>
+      <div class="socials" id="socials"></div>
+    </div>
+  </section>
+
+  <section class="block" id="productos">
+    <div class="wrap">
+      <div class="head"><span class="eyebrow">Productos</span><h2>Elige por dónde empezar</h2><p>Pago seguro y acceso inmediato. Garantía de 7 días.</p></div>
+      <div class="products" id="products"></div>
+    </div>
+  </section>
+
+  <section class="block" id="regalo">
+    <div class="wrap">
+      <div class="lead">
+        <span class="eyebrow" style="color:inherit;opacity:.7">Gratis</span>
+        <h2 id="leadTitle"></h2>
+        <p id="leadText"></p>
+        <form id="leadForm" novalidate>
+          <label for="leadEmail" class="eyebrow" style="position:absolute;left:-9999px">Tu email</label>
+          <input id="leadEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="tu@email.com" required>
+          <button class="btn" type="submit">Enviármelo</button>
+        </form>
+        <p class="msg" id="leadMsg" hidden></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="propinas">
+    <div class="wrap">
+      <div class="head"><span class="eyebrow">Apoya el proyecto</span><h2>Invítame un café</h2><p>Si mi contenido gratis te ayudó, puedes apoyarlo con un aporte.</p></div>
+      <div class="tips" id="tips"></div>
+    </div>
+  </section>
+
+  <section class="block" id="opiniones">
+    <div class="wrap">
+      <div class="head"><span class="eyebrow">Opiniones</span><h2>Lo que dicen quienes ya compraron</h2></div>
+      <div class="quotes" id="quotes"></div>
+    </div>
+  </section>
+
+  <section class="block" id="preguntas">
+    <div class="wrap">
+      <div class="head"><span class="eyebrow">Preguntas frecuentes</span><h2>Antes de comprar</h2></div>
+      <div class="faq" id="faq"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="pay" id="payMethods"></div>
+    <p id="contact"></p>
+    <p class="install" id="installHint">En iPhone: toca Compartir y luego «Agregar a pantalla de inicio» para tener la tienda como app.</p>
+    <p>© <span id="year"></span> <span id="brandFoot"></span></p>
+  </div>
+</footer>
+
+<div class="buybar" id="buybar">
+  <div class="wrap">
+    <div class="t"><b id="bbTitle"></b><span id="bbPrice"></span></div>
+    <a class="btn" id="bbBtn" href="#productos" target="_blank" rel="noopener">Comprar</a>
+  </div>
+</div>
+
+<a class="wa" id="wa" href="#" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp" hidden>
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.5-.3Z"/></svg>
+</a>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function () {
+  const C = CONFIG;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const money = (n) => {
+    try { return new Intl.NumberFormat(C.idioma || "es", { style: "currency", currency: C.moneda || "USD", maximumFractionDigits: n % 1 ? 2 : 0 }).format(n); }
+    catch (e) { return (C.moneda || "$") + " " + n; }
+  };
+  const waLink = (text) => C.whatsapp ? "https://wa.me/" + C.whatsapp + "?text=" + encodeURIComponent(text) : "#";
+  const buyLink = (p) => p.pago || waLink("Hola, quiero comprar «" + p.titulo + "» (" + money(p.precio) + "). ¿Cómo pago?");
+  const toast = (msg) => { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => (t.hidden = true), 2600); };
+  const track = (name, data) => { try { window.plausible && window.plausible(name, { props: data }); window.gtag && window.gtag("event", name, data); } catch (e) {} };
+
+  // Marca
+  document.title = C.marca + " · Tienda digital";
+  $("brandName").textContent = C.marca;
+  $("brandFoot").textContent = C.marca;
+  $("year").textContent = new Date().getFullYear();
+  $("avatar").innerHTML = C.foto ? '<img src="' + esc(C.foto) + '" alt="">' : esc(C.iniciales);
+  $("headline").innerHTML = C.titular; // admite <mark> para resaltar
+  $("lede").textContent = C.subtitulo;
+  $("proof").innerHTML = (C.prueba || []).map((x) => "<span><b>" + esc(x.n) + "</b> " + esc(x.t) + "</span>").join("");
+  $("socials").innerHTML = (C.redes || []).map((r) => '<a class="chip" href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.nombre) + "</a>").join("");
+
+  // Productos
+  const prods = C.productos || [];
+  $("products").innerHTML = prods.map((p) => {
+    const free = !p.precio;
+    const off = p.antes && p.antes > p.precio ? Math.round((1 - p.precio / p.antes) * 100) : 0;
+    return '<article class="card' + (p.destacado ? " featured" : "") + '" id="p-' + esc(p.id) + '">' +
+      '<div class="row"><div>' + (p.etiqueta ? '<span class="badge">' + esc(p.etiqueta) + "</span>" : "") +
+      "<h3>" + esc(p.titulo) + '</h3><p class="desc">' + esc(p.desc) + "</p></div>" +
+      '<div class="price' + (free ? " free" : "") + '"><span class="now">' + (free ? "Gratis" : money(p.precio)) + "</span>" +
+      (off ? '<span class="was">' + money(p.antes) + "</span>" : "") + "</div></div>" +
+      '<ul class="includes">' + (p.incluye || []).map((i) => "<li>" + esc(i) + "</li>").join("") + "</ul>" +
+      '<div class="meta"><span>' + esc(p.formato || "") + "</span>" + (off ? "<span>Ahorras " + off + "%</span>" : "") + "</div>" +
+      '<a class="btn block" data-buy="' + esc(p.id) + '" href="' + esc(buyLink(p)) + '" target="_blank" rel="noopener">' +
+      (free ? "Descargar gratis" : "Comprar por " + money(p.precio)) + "</a></article>";
+  }).join("");
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest("[data-buy]");
+    if (a) track("click_comprar", { producto: a.dataset.buy });
+  });
+
+  // Barra de compra fija con el producto destacado
+  const star = prods.find((p) => p.destacado) || prods[0];
+  if (star) {
+    $("bbTitle").textContent = star.titulo;
+    $("bbPrice").textContent = star.precio ? money(star.precio) + (star.antes > star.precio ? " · antes " + money(star.antes) : "") : "Gratis";
+    $("bbBtn").href = buyLink(star);
+    $("bbBtn").dataset.buy = star.id;
+    const bar = $("buybar"), hero = document.querySelector(".hero"), list = $("productos");
+    const update = () => {
+      const pastHero = hero.getBoundingClientRect().bottom < 0;
+      const r = list.getBoundingClientRect();
+      const onList = r.top < innerHeight && r.bottom > 0;
+      bar.classList.toggle("show", pastHero && !onList);
+    };
+    addEventListener("scroll", update, { passive: true });
+    update();
+  }
+
+  // Oferta con cuenta regresiva
+  if (C.oferta && C.oferta.texto && C.oferta.termina) {
+    const end = new Date(C.oferta.termina).getTime();
+    const tick = () => {
+      const left = end - Date.now();
+      if (!(left > 0)) { $("offer").hidden = true; return false; }
+      const d = Math.floor(left / 864e5), h = Math.floor(left / 36e5) % 24, m = Math.floor(left / 6e4) % 60, s = Math.floor(left / 1e3) % 60;
+      const pad = (n) => String(n).padStart(2, "0");
+      $("offerClock").textContent = (d ? d + "d " : "") + pad(h) + ":" + pad(m) + ":" + pad(s);
+      return true;
+    };
+    $("offerText").textContent = C.oferta.texto + " · termina en";
+    if (tick()) { $("offer").hidden = false; setInterval(tick, 1000); }
+  }
+
+  // Regalo / captura de emails
+  $("leadTitle").textContent = C.regalo.titulo;
+  $("leadText").textContent = C.regalo.texto;
+  $("leadForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const input = $("leadEmail"), msg = $("leadMsg");
+    const email = input.value.trim();
+    msg.hidden = false;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = "Revisa el email: debe tener el formato nombre@dominio.com."; input.focus(); return; }
+    if (!C.regalo.formulario) { msg.textContent = "Falta conectar el formulario: pega tu URL de Formspree en CONFIG.regalo.formulario."; return; }
+    msg.textContent = "Enviando…";
+    try {
+      const r = await fetch(C.regalo.formulario, { method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" }, body: JSON.stringify({ email, origen: "regalo" }) });
+      if (!r.ok) throw new Error(r.status);
+      msg.textContent = "Listo. Revisa tu bandeja de entrada (y la carpeta de promociones).";
+      input.value = "";
+      track("lead", {});
+    } catch (err) {
+      msg.textContent = "No se pudo enviar. Revisa tu conexión e inténtalo otra vez.";
+    }
+  });
+
+  // Propinas
+  if ((C.propinas || []).length) {
+    $("tips").innerHTML = C.propinas.map((t) =>
+      '<a class="tip" href="' + esc(t.pago || waLink("Hola, quiero hacerte un aporte de " + money(t.monto) + ".")) + '" target="_blank" rel="noopener" data-buy="propina-' + t.monto + '"><b>' + money(t.monto) + "</b><span>" + esc(t.texto) + "</span></a>").join("");
+  } else { $("propinas").hidden = true; }
+
+  // Testimonios
+  if ((C.testimonios || []).length) {
+    $("quotes").innerHTML = C.testimonios.map((q) =>
+      '<blockquote class="quote" style="margin:0"><span class="stars" aria-label="5 estrellas">★★★★★</span><p>' + esc(q.texto) + "</p><footer><b>" + esc(q.autor) + "</b> · " + esc(q.rol) + "</footer></blockquote>").join("");
+  } else { $("opiniones").hidden = true; }
+
+  // FAQ
+  $("faq").innerHTML = (C.faq || []).map((f) => "<details><summary>" + esc(f.p) + "</summary><p>" + esc(f.r) + "</p></details>").join("");
+
+  // Pie
+  $("payMethods").innerHTML = (C.mediosDePago || []).map((m) => "<span>" + esc(m) + "</span>").join("");
+  $("contact").innerHTML = C.email ? "Contacto: <span style=\"user-select:all\">" + esc(C.email) + "</span>" : "";
+
+  // WhatsApp flotante
+  if (C.whatsapp) { $("wa").href = waLink("Hola, vengo de tu tienda " + C.marca + "."); $("wa").hidden = false; }
+
+  // Ocultar aviso de instalación si ya está instalada
+  if (navigator.standalone || matchMedia("(display-mode: standalone)").matches) $("installHint").hidden = true;
+
+  // App instalable y offline (solo en tu dominio)
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>
