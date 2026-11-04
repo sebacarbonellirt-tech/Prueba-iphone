@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es-CL">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -119,7 +119,7 @@ section.block .wrap { display: grid; gap: 16px; padding-block: 28px; }
 .card .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .card .row > div { min-width: 0; }
 .badge { display: inline-block; margin-bottom: 8px; padding: 4px 9px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); font: 700 .7rem/1.2 var(--f-body); letter-spacing: .08em; text-transform: uppercase; }
-.card .desc { color: var(--muted); font-size: .95rem; margin-top: 6px; }
+.card .desc { color: var(--muted); font-size: .95rem; }
 /* Etiqueta de precio con agujero, como las de una tienda */
 .price { flex: none; position: relative; background: var(--tag); color: var(--tag-ink); padding: 8px 12px 8px 22px; border-radius: 4px 10px 10px 4px; text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%); }
 .price::before { content: ""; position: absolute; left: 10px; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%; background: var(--surface); }
@@ -194,8 +194,8 @@ const CONFIG = {
   foto: "",                          // URL de tu foto (opcional)
   titular: "Aprende a <mark>vender online</mark> desde tu iPhone",
   subtitulo: "Guías y plantillas prácticas para crecer en redes y convertir seguidores en clientes. Sin humo, con pasos concretos.",
-  moneda: "USD",                    // USD, EUR, ARS, MXN, CLP, COP...
-  idioma: "es",
+  moneda: "CLP",                    // Pesos chilenos. Otras: USD, EUR...
+  idioma: "es-CL",
 
   // Prueba social (pon números reales)
   prueba: [
@@ -205,8 +205,8 @@ const CONFIG = {
   ],
 
   // Contacto. WhatsApp con código de país, sin + ni espacios.
-  whatsapp: "5491100000000",
-  email: "hola@tumarca.com",
+  whatsapp: "56900000000",          // 56 + 9 + tus 8 dígitos, ej: 56912345678
+  email: "hola@tumarca.cl",
   redes: [
     { nombre: "Instagram", url: "https://instagram.com/" },
     { nombre: "TikTok", url: "https://tiktok.com/" },
@@ -214,7 +214,7 @@ const CONFIG = {
   ],
 
   // Oferta con fecha límite (déjala vacía "" para ocultarla)
-  oferta: { texto: "Lanzamiento: 30% off en todo", termina: "2026-11-30T23:59:00" },
+  oferta: { texto: "Lanzamiento: hasta 38% dcto.", termina: "2026-11-30T23:59:00" },   // hora de Chile si abres desde Chile
 
   // PRODUCTOS. "pago" = tu link de cobro (Mercado Pago, Stripe, Hotmart, Lemon Squeezy, Gumroad...).
   // Si "pago" está vacío, el botón abre WhatsApp con el pedido ya escrito.
@@ -223,7 +223,7 @@ const CONFIG = {
       id: "guia-reels",
       titulo: "Guía: 30 Reels que venden",
       desc: "Ideas de guion listas para grabar con el iPhone, incluso sin mostrar tu cara: voz en off, manos o pantalla.",
-      precio: 9, antes: 15,
+      precio: 7990, antes: 12990,
       etiqueta: "Más vendido", destacado: true,
       incluye: ["PDF de 42 páginas", "30 guiones con plantilla de gancho", "Calendario de 30 días", "Acceso inmediato"],
       formato: "PDF · descarga inmediata",
@@ -233,7 +233,7 @@ const CONFIG = {
       id: "pack-plantillas",
       titulo: "Pack de 50 plantillas para Canva",
       desc: "Carruseles, historias y portadas editables. Cambias colores y textos en minutos desde el móvil.",
-      precio: 15, antes: 25,
+      precio: 12990, antes: 19990,
       etiqueta: "", destacado: false,
       incluye: ["50 diseños editables", "Funciona con Canva gratis", "Guía de uso en video"],
       formato: "Link de Canva · descarga inmediata",
@@ -251,9 +251,9 @@ const CONFIG = {
 
   // Propinas / "Invítame un café". Deja la lista vacía [] para ocultar.
   propinas: [
-    { monto: 3, texto: "Un café", pago: "" },
-    { monto: 5, texto: "Un desayuno", pago: "" },
-    { monto: 10, texto: "Un almuerzo", pago: "" }
+    { monto: 2000, texto: "Un café", pago: "" },
+    { monto: 3500, texto: "Una once", pago: "" },
+    { monto: 6000, texto: "Un completo y bebida", pago: "" }
   ],
 
   testimonios: [
@@ -264,12 +264,12 @@ const CONFIG = {
 
   faq: [
     { p: "¿Cómo recibo el producto?", r: "Al pagar recibes el acceso en tu email al instante. Si algo falla, escríbeme por WhatsApp y te lo envío a mano." },
-    { p: "¿Qué medios de pago aceptan?", r: "Tarjeta de crédito y débito, Apple Pay y, según tu país, Mercado Pago o transferencia." },
+    { p: "¿Qué medios de pago aceptan?", r: "Tarjeta de crédito, débito Redcompra, Mercado Pago o transferencia bancaria. Precios en pesos chilenos, IVA incluido." },
     { p: "¿Sirve si empiezo de cero?", r: "Sí. Todo está pensado para hacerse desde el teléfono, sin programas ni conocimientos previos." },
     { p: "¿Hay garantía?", r: "Tienes 7 días de garantía. Si no te sirve, te devuelvo el dinero sin preguntas." }
   ],
 
-  mediosDePago: ["Visa", "Mastercard", "Apple Pay", "Mercado Pago", "PayPal"]
+  mediosDePago: ["Visa", "Mastercard", "Redcompra", "Mercado Pago", "Transferencia"]
 };
 </script>
 
@@ -396,9 +396,10 @@ const CONFIG = {
     const off = p.antes && p.antes > p.precio ? Math.round((1 - p.precio / p.antes) * 100) : 0;
     return '<article class="card' + (p.destacado ? " featured" : "") + '" id="p-' + esc(p.id) + '">' +
       '<div class="row"><div>' + (p.etiqueta ? '<span class="badge">' + esc(p.etiqueta) + "</span>" : "") +
-      "<h3>" + esc(p.titulo) + '</h3><p class="desc">' + esc(p.desc) + "</p></div>" +
+      "<h3>" + esc(p.titulo) + "</h3></div>" +
       '<div class="price' + (free ? " free" : "") + '"><span class="now">' + (free ? "Gratis" : money(p.precio)) + "</span>" +
       (off ? '<span class="was">' + money(p.antes) + "</span>" : "") + "</div></div>" +
+      '<p class="desc">' + esc(p.desc) + "</p>" +
       '<ul class="includes">' + (p.incluye || []).map((i) => "<li>" + esc(i) + "</li>").join("") + "</ul>" +
       '<div class="meta"><span>' + esc(p.formato || "") + "</span>" + (off ? "<span>Ahorras " + off + "%</span>" : "") + "</div>" +
       '<a class="btn block" data-buy="' + esc(p.id) + '" href="' + esc(buyLink(p)) + '" target="_blank" rel="noopener">' +

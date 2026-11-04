@@ -12,7 +12,7 @@ sin pagar suscripciones ni comisiones de plataforma de tienda.
 | Barra de compra fija | Cuando el cliente baja por la página, el producto estrella queda siempre a un toque. |
 | Oferta con cuenta regresiva | Banner amarillo con fecha límite real. Se oculta solo al vencer. |
 | Regalo a cambio del email | Junta una lista de clientes a la que luego le vendes (vía Formspree, gratis). |
-| "Invítame un café" | Propinas de 3, 5 y 10 para tu público que no compra todavía. |
+| "Invítame un café" | Propinas de $2.000, $3.500 y $6.000 para tu público que no compra todavía. |
 | Opiniones y preguntas frecuentes | Quitan dudas y suben la conversión. |
 | WhatsApp flotante | Para cerrar ventas por chat. |
 | App instalable (PWA) | Desde Safari: Compartir → «Agregar a pantalla de inicio». Funciona sin conexión. |
@@ -36,14 +36,22 @@ En cada producto, pega tu link de pago en el campo `pago`. Opciones que se crean
 
 | Plataforma | Mejor para | Entrega el archivo sola |
 | --- | --- | --- |
-| **Mercado Pago** (Link de pago) | Latinoamérica, pagos en moneda local | No: envíalo tú por email o WhatsApp |
-| **Hotmart** | Cursos e infoproductos en LATAM | Sí |
-| **Lemon Squeezy** / **Gumroad** | Productos digitales en USD, impuestos incluidos | Sí |
-| **Stripe** (Payment Links) | Tarjeta y Apple Pay en todo el mundo | No |
-| **PayPal.me** | Propinas rápidas | No |
+| **Mercado Pago** (Link de pago) | Lo más fácil en Chile: tarjeta, débito y saldo MP. La app crea el link en 1 minuto | No: envíalo tú por email o WhatsApp |
+| **Flow** (flow.cl, link de pago) | Webpay (crédito y Redcompra), Khipu y transferencia | No |
+| **Hotmart** | Cursos e infoproductos; cobra en pesos y te paga a tu cuenta chilena | Sí |
+| **Gumroad** / **Lemon Squeezy** | Vender también a clientes de otros países, en dólares | Sí |
+| **Transferencia** | Propinas: pon tus datos y que te avisen por WhatsApp | No |
 
-Recomendación: usa **Hotmart, Lemon Squeezy o Gumroad** para los productos (entregan el archivo
-automáticamente) y **Mercado Pago o PayPal** para las propinas.
+Recomendación para Chile: **Hotmart** para los productos (entrega el archivo sola y acepta
+pesos) y **Mercado Pago** para las propinas. Stripe no abre cuentas para personas en Chile.
+
+Los precios están en pesos con terminación 990 (7.990, 12.990), que es lo habitual en Chile.
+
+### Impuestos (SII)
+
+Si empiezas a vender en serio, haz **inicio de actividades** en sii.cl y emite boleta.
+Hotmart y Mercado Pago informan tus ventas, así que conviene ordenarse desde el principio.
+Consulta con un contador el régimen que más te conviene (por ejemplo, Pro Pyme).
 
 ## 3. Publícala gratis
 
@@ -53,7 +61,7 @@ Tu tienda queda en `https://TU-USUARIO.github.io/Prueba-iphone/`.
 
 **Opción B: Vercel**
 vercel.com → Add New Project → importa este repositorio → Deploy. Te da HTTPS y puedes
-conectar un dominio propio (`tumarca.com`).
+conectar un dominio propio (`tumarca.cl`, se compra en nic.cl).
 
 ## 4. Captura de emails (opcional, gratis)
 
@@ -63,7 +71,7 @@ conectar un dominio propio (`tumarca.com`).
 
 ## Cómo ganar dinero con ella
 
-1. **Escalera de precios.** Regalo gratis → producto barato (9) → producto medio (15).
+1. **Escalera de precios.** Regalo gratis → producto barato ($7.990) → producto medio ($12.990).
    La mayoría compra primero lo barato; los que confían suben al siguiente.
 2. **Tráfico.** Pon el link en la bio de Instagram y TikTok. Cada video termina con
    «link en mi perfil». Graba con el iPhone sin mostrar tu cara
