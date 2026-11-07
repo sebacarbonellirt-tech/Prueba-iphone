@@ -26,11 +26,29 @@ tv/
 | Mis listas | Quien tenga su propia lista M3U puede sumarla (link, archivo o texto). |
 | Sin conexión | Si no carga la región, muestra videos de prueba y un aviso. |
 | Filtro | Se ocultan solos los canales para adultos. |
+| Canales inactivos | Los que no responden salen de sus categorías y quedan en una sección propia al final (y en el filtro «Inactivos»). Cuando vuelven, regresan solos. |
 
 Los canales salen de [iptv-org](https://github.com/iptv-org/iptv), un índice público de
 señales que sus propios dueños publican gratis en internet. Muchas se caen o cambian:
 la lista se descarga de nuevo cada vez que se abre la tele, y si un canal falla, el
 botón «Siguiente canal» salta al próximo.
+
+## Canales inactivos (automático)
+
+Dos revisiones trabajan juntas:
+
+1. **En el servidor** (`api/estado.js`, una función de Vercel): prueba todas las señales de la
+   región y devuelve las que no responden (error, página caída, o más de 6 segundos sin
+   contestar). Vercel guarda el resultado 6 horas, así que la revisión corre pocas veces al
+   día y es igual para todos los visitantes. Las señales que niegan el acceso (403, típico de
+   las que solo se ven en su país) **no** se marcan como caídas, porque el servidor está en
+   EE. UU. y podrían funcionar en Chile.
+2. **En cada teléfono**: si un canal falla al reproducirlo, pasa de inmediato a «Canales
+   inactivos» en ese teléfono durante 12 horas. Si luego funciona, se quita solo.
+
+Los botones «Siguiente» y «Ver un canal ahora» se saltan los inactivos. Los inactivos se pueden
+tocar igual para probarlos. Para cambiar los tiempos: `TIEMPO_POR_SENAL` y `s-maxage` en
+`api/estado.js`, y `DEAD_MS` en `index.html`.
 
 ## Cómo se gana dinero
 

@@ -165,6 +165,9 @@ p { margin: 0; }
 .empty { padding: 30px 10px; text-align: center; color: var(--muted); display: grid; gap: 12px; justify-items: center; }
 .skeleton .logo { animation: pulse 1.4s ease-in-out infinite; }
 .skeleton .cname { height: 12px; width: 70%; border-radius: 6px; background: var(--tile); }
+.card.down .logo { opacity: .45; filter: grayscale(1); }
+.card.down .cname { color: var(--muted); }
+.down-note { font-size: .82rem; color: var(--muted); margin: -4px 0 10px; max-width: 46em; }
 
 /* Banner: auspiciador o Plus */
 .promo { margin-block: 16px 4px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 14px; padding: 16px 18px; border-radius: var(--r); background: color-mix(in srgb, var(--plus) 14%, var(--surface)); text-decoration: none; }
@@ -462,7 +465,7 @@ const CONFIG = {
   const norm = (s) => (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
   /* ---------- Estado (solo en este dispositivo) ---------- */
-  const blank = { region: CONFIG.regionInicial, lists: [], favs: [], recent: [], plus: null, theme: "auto" };
+  const blank = { region: CONFIG.regionInicial, lists: [], favs: [], recent: [], plus: null, theme: "auto", dead: {} };
   let state;
   try { state = Object.assign({}, blank, JSON.parse(localStorage.getItem(KEY)) || {}); } catch { state = { ...blank }; }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} };
@@ -521,6 +524,40 @@ const CONFIG = {
 
   /* ---------- Canales ---------- */
   let channels = [], loading = true, loadFailed = false;
+  /* ---------- Canales inactivos ----------
+     Dos fuentes: la revisión automática del servidor (api/estado.js, cada ~6 horas, igual para todos)
+     y los fallos en este teléfono (duran DEAD_MS; si el canal vuelve a funcionar, se quitan solos). */
+  const DEAD_MS = 12 * 3600 * 1000;
+  let serverDown = new Set(), statusAt = 0;
+  if (!state.dead || typeof state.dead !== "object") state.dead = {};
+  const isDown = (c) => serverDown.has(c.url) || (state.dead[c.url] && Date.now() - state.dead[c.url] < DEAD_MS);
+  const activeList = () => channels.filter((c) => !isDown(c));
+  const downList = () => channels.filter(isDown);
+  function markDead(c) {
+    if (state.dead[c.url]) return;
+    state.dead[c.url] = Date.now(); save(); render();
+  }
+  function markAlive(c) {
+    if (!state.dead[c.url] && !serverDown.has(c.url)) return;
+    delete state.dead[c.url]; serverDown.delete(c.url); save(); render();
+  }
+  function pruneDead() {
+    for (const [u, t] of Object.entries(state.dead)) if (Date.now() - t >= DEAD_MS) delete state.dead[u];
+  }
+  async function loadStatus(r) {
+    try {
+      const res = await fetch("api/estado?lista=" + encodeURIComponent(r.url));
+      if (!res.ok) return;
+      const j = await res.json();
+      if (r.id !== region().id || !Array.isArray(j.caidos)) return;
+      serverDown = new Set(j.caidos); statusAt = j.at || Date.now();
+      render();
+    } catch {}
+  }
+  function ago(t) {
+    const m = Math.max(1, Math.round((Date.now() - t) / 60000));
+    return m < 60 ? "hace " + m + " min" : "hace " + Math.round(m / 60) + " h";
+  }
   const region = () => CONFIG.regiones.find((r) => r.id === state.region) || CONFIG.regiones[0];
   let regionText = "";
   function rebuild() {
@@ -543,7 +580,7 @@ const CONFIG = {
     const r = region();
     $("#regionName").textContent = r.nombre;
     regionText = cacheGet(r.id);
-    loading = !regionText; loadFailed = false;
+    loading = !regionText; loadFailed = false; serverDown = new Set(); statusAt = 0;
     rebuild(); render();
     try {
       const t = await fetchText(r.url);
@@ -552,6 +589,7 @@ const CONFIG = {
     } catch { if (!regionText) { loadFailed = true; toast("No pudimos cargar los canales. Revisa tu conexión."); } }
     loading = false;
     rebuild(); render();
+    loadStatus(r);
   }
 
   /* ---------- Vista ---------- */
@@ -559,7 +597,7 @@ const CONFIG = {
   const byUrl = (u) => channels.find((c) => c.url === u);
   function catList() {
     const counts = new Map();
-    for (const c of channels) for (const g of c.cats) counts.set(g, (counts.get(g) || 0) + 1);
+    for (const c of activeList()) for (const g of c.cats) counts.set(g, (counts.get(g) || 0) + 1);
     const pri = CONFIG.categorias.filter((g) => counts.has(g));
     const rest = [...counts.keys()].filter((g) => !pri.includes(g) && g !== "Otros").sort((a, b) => a.localeCompare(b, "es"));
     return [...pri, ...rest, ...(counts.has("Otros") ? ["Otros"] : [])].map((g) => [g, counts.get(g)]);
@@ -581,13 +619,14 @@ const CONFIG = {
     return box;
   }
   function card(c, list) {
-    const b = el("button", "card"); b.type = "button"; b.dataset.url = c.url;
+    const down = isDown(c);
+    const b = el("button", "card" + (down ? " down" : "")); b.type = "button"; b.dataset.url = c.url;
     const lg = logoEl(c);
     if (state.favs.includes(c.url)) lg.append(el("span", "fav", "★"));
     if (current && current.url === c.url) { b.setAttribute("aria-current", "true"); lg.append(el("span", "playing", "VIENDO")); }
-    const meta = [flag(c.cc), c.group, c.geo ? "Solo en su país" : "", c.part ? "No 24/7" : ""].filter(Boolean).join(" · ");
+    const meta = [flag(c.cc), down ? "Sin señal" : c.group, !down && c.geo ? "Solo en su país" : "", !down && c.part ? "No 24/7" : ""].filter(Boolean).join(" · ");
     b.append(lg, el("span", "cname", c.name), el("span", "cmeta", meta));
-    b.setAttribute("aria-label", c.name + ", " + c.group);
+    b.setAttribute("aria-label", c.name + ", " + (down ? "sin señal" : c.group));
     b.onclick = () => pick(c, list);
     return b;
   }
@@ -630,8 +669,9 @@ const CONFIG = {
     if (query) { const q = norm(query); return channels.filter((c) => norm(c.name).includes(q) || c.cats.some((g) => norm(g).includes(q))); }
     if (filter === "fav") arr = state.favs.map(byUrl).filter(Boolean);
     else if (filter === "recent") arr = state.recent.map(byUrl).filter(Boolean);
-    else if (filter === "all") arr = channels;
-    else arr = channels.filter((c) => c.cats.includes(filter));
+    else if (filter === "down") arr = downList();
+    else if (filter === "all") arr = activeList();
+    else arr = activeList().filter((c) => c.cats.includes(filter));
     return arr;
   }
 
@@ -639,6 +679,8 @@ const CONFIG = {
     const items = [["all", "Inicio"], ["fav", "★ Favoritos"]];
     if (state.recent.length) items.push(["recent", "Recientes"]);
     catList().forEach(([g]) => items.push([g, g]));
+    const nDown = downList().length;
+    if (nDown) items.push(["down", "Inactivos " + nDown]);
     if (!items.some(([k]) => k === filter)) filter = "all";
     $("#chips").replaceChildren(...items.map(([k, label]) => {
       const b = el("button", "chip", label); b.type = "button";
@@ -653,6 +695,10 @@ const CONFIG = {
     if (scrollY > top) scrollTo({ top, behavior: "smooth" });
   }
 
+  function downNote(n) {
+    return (n === 1 ? "Este canal no respondió" : "Estos canales no respondieron") + " en la última revisión" + (statusAt ? " (" + ago(statusAt) + ")" : "") +
+      ". Los revisamos solos cada pocas horas: cuando vuelven a transmitir, regresan a su categoría. Puedes tocarlos para probar igual.";
+  }
   function render() {
     renderChips();
     const box = $("#content");
@@ -669,19 +715,27 @@ const CONFIG = {
       if (rec.length) parts.push(shelf("Seguir viendo", rec, "recent"));
       const favs = state.favs.map(byUrl).filter(Boolean);
       if (favs.length) parts.push(shelf("Tus favoritos", favs, "fav"));
+      const act = activeList();
       catList().forEach(([g], i) => {
-        parts.push(shelf(g, channels.filter((c) => c.cats.includes(g)), g));
+        parts.push(shelf(g, act.filter((c) => c.cats.includes(g)), g));
         if (i === 1) { const p = promo(); if (p) parts.push(p); }
       });
       if (!channels.length) parts.push(el("div", "empty", "No hay canales en esta región."));
+      const dl = downList();
+      if (dl.length) {
+        const s = shelf("Canales inactivos", dl, "down");
+        s.querySelector(".shelf-head").after(el("p", "down-note", downNote(dl.length)));
+        parts.push(s);
+      }
       box.replaceChildren(...parts);
       return;
     }
     const arr = visible();
     const head = el("div", "shelf");
     const h = el("div", "shelf-head");
-    h.append(el("h2", "", query ? "Resultados" : filter === "fav" ? "Tus favoritos" : filter === "recent" ? "Vistos recientemente" : filter));
+    h.append(el("h2", "", query ? "Resultados" : filter === "fav" ? "Tus favoritos" : filter === "recent" ? "Vistos recientemente" : filter === "down" ? "Canales inactivos" : filter));
     head.append(h, el("p", "count", arr.length === 1 ? "1 canal" : arr.length.toLocaleString("es-CL") + " canales"));
+    if (filter === "down" && !query) head.append(el("p", "down-note", downNote(arr.length)));
     const grid = el("div", "grid");
     arr.slice(0, shown).forEach((c) => grid.append(card(c, arr)));
     const parts = [head];
@@ -727,6 +781,9 @@ const CONFIG = {
   let detach = null, attempt = 0;
   const setOverlay = (w, msg) => { $("#loading").hidden = w !== "loading"; $("#failed").hidden = w !== "failed"; if (msg) $("#failedMsg").textContent = msg; };
   function failMsg(c) {
+    return failReason(c) + " Lo dejamos en «Canales inactivos».";
+  }
+  function failReason(c) {
     if (location.protocol === "https:" && /^http:\/\//i.test(c.url)) return "Esta señal usa http:// y el navegador la bloquea en una página segura.";
     if (c.geo) return "Esta señal solo se puede ver dentro de su país.";
     return "Este canal no está transmitiendo ahora. Puede estar caído o fuera de horario.";
@@ -749,7 +806,7 @@ const CONFIG = {
     $("#hero").hidden = true;
     if (detach) detach();
     setOverlay("loading");
-    detach = await attach(video, c.url, () => { if (mine === attempt) setOverlay("failed", failMsg(c)); });
+    detach = await attach(video, c.url, () => { if (mine === attempt) { setOverlay("failed", failMsg(c)); markDead(c); } });
     if (mine !== attempt) return;
     // iPhone no deja reproducir con sonido sin un toque: en ese caso quedan los controles a la vista.
     video.play().catch(() => { if (mine === attempt && $("#failed").hidden) setOverlay(null); });
@@ -772,12 +829,18 @@ const CONFIG = {
   function step(d) {
     if (!current) return;
     const arr = playlist.length ? playlist : channels;
-    const n = arr[(arr.indexOf(current) + d + arr.length) % arr.length];
+    const at = arr.indexOf(current);
+    // Salta los canales inactivos; si todos lo están, pasa al siguiente igual.
+    for (let k = 1; k <= arr.length; k++) {
+      const n = arr[(at + d * k + arr.length * k) % arr.length];
+      if (n && n !== current && !isDown(n)) return play(n, arr);
+    }
+    const n = arr[(at + d + arr.length) % arr.length];
     if (n) play(n, arr);
   }
-  video.addEventListener("playing", () => setOverlay(null));
+  video.addEventListener("playing", () => { setOverlay(null); if (current) markAlive(current); });
   video.addEventListener("waiting", () => { if ($("#failed").hidden) setOverlay("loading"); });
-  video.addEventListener("error", () => { if (current && video.getAttribute("src")) setOverlay("failed", failMsg(current)); });
+  video.addEventListener("error", () => { if (current && video.getAttribute("src")) { setOverlay("failed", failMsg(current)); markDead(current); } });
   video.addEventListener("canplay", () => { if (video.paused && $("#failed").hidden) setOverlay(null); });
   $("#retry").onclick = () => current && play(current);
   $("#skip").onclick = () => step(1);
@@ -802,8 +865,9 @@ const CONFIG = {
     };
   }
   $("#surprise").onclick = () => {
-    const pool = channels.filter((c) => !c.geo && !c.part && c.cats.some((g) => ["Noticias", "Música", "General", "Entretención"].includes(g)));
-    const list = pool.length ? pool : channels;
+    const act = activeList();
+    const pool = act.filter((c) => !c.geo && !c.part && c.cats.some((g) => ["Noticias", "Música", "General", "Entretención"].includes(g)));
+    const list = pool.length ? pool : act.length ? act : channels;
     if (list.length) play(list[Math.floor(Math.random() * list.length)], list);
   };
 
@@ -839,7 +903,8 @@ const CONFIG = {
     if (slotStops[i]) { slotStops[i](); slotStops[i] = null; }
     const c = slots[i]; if (!c) return;
     const v = slotEl(i).querySelector("video");
-    slotStops[i] = await attach(v, c.url, () => { if (slots[i] === c) paintSlot(i, "sin señal"); });
+    slotStops[i] = await attach(v, c.url, () => { if (slots[i] === c) { paintSlot(i, "sin señal"); markDead(c); } });
+    v.addEventListener("playing", () => { if (slots[i] === c) markAlive(c); }, { once: true });
     v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
   }
   function selectSlot(i) {
@@ -1040,6 +1105,7 @@ const CONFIG = {
   if (!CONFIG.whatsapp && !CONFIG.plus.planes.some((p) => p.pago)) $("#codeHelp").textContent = "Las suscripciones abren muy pronto. Si ya tienes un código, actívalo aquí.";
   $("#addChannel").href = wa("Hola, tengo un canal/radio y quiero que aparezca gratis en " + CONFIG.marca + ". Mi señal es: ");
   paintPlus(); applyTheme();
+  pruneDead(); save();
   loadRegion();
   document.addEventListener("keydown", (e) => {
     if (e.target.closest("input, textarea, dialog")) return;
