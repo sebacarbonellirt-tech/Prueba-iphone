@@ -264,6 +264,17 @@ const CONFIG = {
   // Señales retiradas a pedido de su dueño (pega aquí el nombre exacto o el link).
   ocultar: [],
 
+  // Filtro de señales no oficiales. Algunas listas públicas traen copias de canales de pago
+  // retransmitidas sin permiso. Se ocultan aunque funcionen:
+  //  · canales de pago por nombre (lista de abajo),
+  //  · señales servidas desde una dirección IP suelta o con rutas típicas de retransmisión,
+  //  · señales que salen de los servidores de operadores de TV de pago.
+  canalesDePago: ["disney", "cinecanal", "star channel", "star life", "star+", "hbo", "cinemax", "espn", "fox sports", "fox channel", "fox life",
+    "tnt", "warner", "cartoon network", "cartoonito", "discovery", "nat geo", "national geographic", "history", "a&e", "lifetime", "axn", "sony",
+    "universal tv", "studio universal", "fx", "paramount", "nickelodeon", "nick jr", "comedy central", "mtv", "golden premier", "golden edge",
+    "cdf", "canal del futbol", "tyc sports", "tudn", "win sports", "dsports", "directv", "movistar", "bein", "dazn", "eurosport", "gol tv", "goltv"],
+  operadoresDePago: ["vtrplay", "clarovtr", "clarovideo", "directv", "movistar", "skymas", "tigo", "dtvott"],
+
   /* ---------- MONETIZACIÓN ---------- */
   // Auspiciadores: banners que ven quienes no tienen Plus. Vacío = se muestra la publicidad de Plus.
   // Ejemplo: { imagen: "https://…/banner.jpg", url: "https://ferreteria.cl", texto: "Ferretería El Sur" }
@@ -482,6 +493,18 @@ const CONFIG = {
     public: "Públicos", undefined: "Otros" };
   const ADULT = /\b(xxx|adult|adulto|erotic|porn)/i;
   const hidden = new Set(CONFIG.ocultar.map(norm));
+  const esc = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const PAGO = new RegExp("(^|[^a-z0-9])(" + CONFIG.canalesDePago.map((n) => esc(norm(n))).join("|") + ")(?![a-z0-9])", "i");
+  const OPERADOR = new RegExp("(" + CONFIG.operadoresDePago.map(esc).join("|") + ")", "i");
+  // true = parece una copia no oficial de un canal de pago: no se muestra.
+  function noOficial(name, url) {
+    let host = "";
+    try { host = new URL(url).hostname; } catch { return true; }
+    if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.includes(":") || host.startsWith("[")) return true; // IP suelta
+    if (/\/play\/a[0-9a-z]{3}\b/i.test(url)) return true;                                          // ruta típica de retransmisión
+    if (OPERADOR.test(host)) return true;                                                          // servidores de TV de pago
+    return PAGO.test(norm(name));
+  }
 
   function flag(cc) {
     if (!/^[a-z]{2}$/i.test(cc || "")) return "";
@@ -514,7 +537,7 @@ const CONFIG = {
         const cats = [...new Set(rawGroups.map((g) => GROUPS[g.toLowerCase()] || g))];
         if (!cats.length) cats.push("Otros");
         const name = i.name || decodeURIComponent(line.split("/").pop().split("?")[0]) || "Canal";
-        if (!hidden.has(norm(name)) && !hidden.has(norm(line)))
+        if (!hidden.has(norm(name)) && !hidden.has(norm(line)) && !(src === "region" && noOficial(name, line)))
           out.push({ name, logo: i.logo, cats, group: cats[0], cc: i.cc, geo: i.geo, part: i.part, url: line, src });
         info = null; extGroup = "";
       }
@@ -585,7 +608,7 @@ const CONFIG = {
     try {
       const t = await fetchText(r.url);
       if (r.id !== region().id) return;
-      if (parseM3U(t, "x").length) { regionText = t; cacheSet(r.id, t); }
+      if (parseM3U(t, "region").length) { regionText = t; cacheSet(r.id, t); }
     } catch { if (!regionText) { loadFailed = true; toast("No pudimos cargar los canales. Revisa tu conexión."); } }
     loading = false;
     rebuild(); render();

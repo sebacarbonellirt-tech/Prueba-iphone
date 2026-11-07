@@ -25,7 +25,7 @@ tv/
 | Tarjetas | Bandera del país, categoría y avisos «Solo en su país» o «No 24/7». |
 | Mis listas | Quien tenga su propia lista M3U puede sumarla (link, archivo o texto). |
 | Sin conexión | Si no carga la región, muestra videos de prueba y un aviso. |
-| Filtro | Se ocultan solos los canales para adultos. |
+| Filtros | Se ocultan solos los canales para adultos y las copias no oficiales de canales de pago (ver «Lo legal»). |
 | Canales inactivos | Los que no responden salen de sus categorías y quedan en una sección propia al final (y en el filtro «Inactivos»). Cuando vuelven, regresan solos. |
 
 Los canales salen de [iptv-org](https://github.com/iptv-org/iptv), un índice público de
@@ -131,6 +131,12 @@ el iPhone) queda en línea en menos de un minuto.
 
 - Antena **no aloja ni vende canales**: enlaza señales que sus dueños transmiten gratis y
   públicamente, a partir del índice iptv-org. Plus cobra por funciones de la app.
+- **Filtro automático de señales no oficiales**: las listas públicas a veces traen copias de
+  canales de pago retransmitidas sin permiso (Disney, ESPN, Cinecanal, MTV…). La tele las
+  oculta **aunque funcionen**: por nombre (`CONFIG.canalesDePago`), por venir de una dirección
+  IP suelta o de una ruta típica de retransmisión, o por salir de servidores de operadores de
+  TV de pago (`CONFIG.operadoresDePago`). No se aplica a las listas propias que agregue cada
+  persona. Si ves que se coló otra, agrega su nombre a `canalesDePago`.
 - **Retiros**: si el dueño de una señal te pide sacarla (el pie de página tiene tu email),
   agrégala a `CONFIG.ocultar` en menos de 48 horas.
 - **No agregues** listas de canales de pago (cable, fútbol, plataformas de streaming) ni
