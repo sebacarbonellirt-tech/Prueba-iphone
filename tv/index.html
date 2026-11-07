@@ -682,11 +682,25 @@ const CONFIG = {
   /* ---------- Canales ---------- */
   let channels = [], loading = true, loadFailed = false;
   /* ---------- Canales inactivos ----------
-     Dos fuentes: la revisión automática del servidor (api/estado.js, cada ~6 horas, igual para todos)
-     y los fallos en este teléfono (duran DEAD_MS; si el canal vuelve a funcionar, se quitan solos). */
+     Tres fuentes: la revisión automática del servidor (api/estado.js, cada ~6 horas, igual para todos),
+     la revisión de este teléfono apenas se abre la tele (ver «Revisión desde el teléfono») y los fallos
+     al reproducir (duran DEAD_MS; si el canal vuelve a funcionar, se quitan solos). */
   const DEAD_MS = 12 * 3600 * 1000;
-  let serverDown = new Set(), statusAt = 0;
+  let serverDown = new Set(), statusAt = 0, renderTimer = 0, saveTimer = 0, lastTouch = 0;
   if (!state.dead || typeof state.dead !== "object") state.dead = {};
+  if (!state.okAt || typeof state.okAt !== "object") state.okAt = {};
+  // Guarda y redibuja sin interrumpir: espera a que la persona deje de deslizar la pantalla.
+  const saveSoon = () => { if (!saveTimer) saveTimer = setTimeout(() => { saveTimer = 0; save(); }, 2000); };
+  function softRender() {
+    if (renderTimer) return;
+    const tick = () => {
+      if (document.hidden || Date.now() - lastTouch < 1200) { renderTimer = setTimeout(tick, 700); return; }
+      renderTimer = 0; render();
+    };
+    renderTimer = setTimeout(tick, 1500);
+  }
+  const touched = () => { lastTouch = Date.now(); };
+  ["touchstart", "touchmove", "pointerdown", "wheel", "scroll"].forEach((t) => document.addEventListener(t, touched, { capture: true, passive: true }));
   // Un canal puede tener varias señales (c.urls): está inactivo solo si fallan todas.
   const urlDown = (u) => serverDown.has(u) || (state.dead[u] && Date.now() - state.dead[u] < DEAD_MS);
   const isDown = (c) => c.urls.every(urlDown);
@@ -706,6 +720,7 @@ const CONFIG = {
   }
   function pruneDead() {
     for (const [u, t] of Object.entries(state.dead)) if (Date.now() - t >= DEAD_MS) delete state.dead[u];
+    for (const [u, t] of Object.entries(state.okAt)) if (Date.now() - t >= OK_MS) delete state.okAt[u];
   }
   async function loadStatus(r) {
     try {
@@ -717,6 +732,136 @@ const CONFIG = {
       render();
     } catch {}
   }
+
+  /* ---------- Revisión desde el teléfono ----------
+     Apenas carga la región, el teléfono prueba en segundo plano las señales, sin esperar a que alguien
+     toque el canal: primero las que se ven en pantalla y después el resto. Las que no responden pasan
+     solas a «Canales inactivos» y en su lugar aparecen otras que sí funcionan. Prueba desde el país de
+     quien mira (no desde EE. UU. como el servidor) y solo descarga el comienzo de cada señal. */
+  const PROBE_MS = 8000;           // ms antes de dar una señal por caída
+  const PROBE_AT_ONCE = 6;         // señales que se prueban a la vez
+  const OK_MS = 3600 * 1000;       // una señal que respondió no se vuelve a probar en 1 hora
+  const RECHECK_MS = 3600 * 1000;  // una señal caída se vuelve a probar después de 1 hora
+  let probeRun = 0, probing = false, hiddenAt = 0;
+  const fresh = (t, ms) => !!t && Date.now() - t < ms;
+  async function firstBytes(r, n) {
+    if (!r.body || !r.body.getReader) return (await r.text()).slice(0, n);
+    const rd = r.body.getReader(), dec = new TextDecoder();
+    let t = "";
+    while (t.length < n) { const { value, done } = await rd.read(); if (done) break; t += dec.decode(value, { stream: true }); }
+    rd.cancel().catch(() => {});
+    return t;
+  }
+  // "ok" responde · "caido" no responde · "?" no se pudo saber (se prueba más tarde)
+  async function probeUrl(u) {
+    if (blockedHttp(u)) return "caido";
+    const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), PROBE_MS);
+    const opts = { signal: ctrl.signal, cache: "no-store", credentials: "omit", referrerPolicy: "no-referrer" };
+    try {
+      let r;
+      try { r = await fetch(u, opts); }
+      catch {
+        if (ctrl.signal.aborted) return "caido";
+        // La señal no deja leerla desde otra página (CORS): al menos confirmamos que su servidor contesta.
+        await fetch(u, { ...opts, mode: "no-cors" });
+        return nativeHls ? "ok" : "caido"; // el iPhone la reproduce igual; hls.js (Android, PC) no puede
+      }
+      if (r.status === 429) return "?";
+      if (!r.ok) return "caido"; // incluye 403: en este país no se puede ver
+      if (/\.m3u8?(\?|$)/i.test(u) || /mpegurl/i.test(r.headers.get("content-type") || ""))
+        return (await firstBytes(r, 2048)).includes("#EXTM3U") ? "ok" : "caido";
+      return "ok";
+    } catch { return "caido"; }
+    finally { clearTimeout(timer); ctrl.abort(); }
+  }
+  // Orden: lo que está a la vista primero (nacionales, seguir viendo, favoritos, las primeras tarjetas
+  // de cada fila), después el resto de cada fila, y al final los inactivos, por si volvieron.
+  function probeQueue() {
+    const seen = new Set(), out = [];
+    const add = (c) => { if (c && c.src !== "demo" && !seen.has(c)) { seen.add(c); out.push(c); } };
+    if (filter !== "all" || query) visible().slice(0, shown).forEach(add);
+    nationals().forEach((x) => add(x.c));
+    chanList(state.recent).forEach(add);
+    chanList(state.favs).forEach(add);
+    const act = activeList(), rows = catList().map(([g]) => act.filter((c) => c.cats.includes(g)));
+    for (const [a, b] of [[0, 6], [6, CONFIG.porFila]]) rows.forEach((r) => r.slice(a, b).forEach(add));
+    act.forEach(add);
+    downList().forEach(add);
+    return out;
+  }
+  // La próxima señal por probar de un canal, o "" si no hace falta.
+  function probeTarget(c, tried) {
+    if (c === current || (multiOn && slots.includes(c))) return ""; // la que se está viendo ya se prueba sola
+    if (!isDown(c) && c.urls.some((u) => fresh(state.okAt[u], OK_MS))) return "";
+    return sourcesFor(c).find((u) => !tried.has(u) && !serverDown.has(u) &&
+      !fresh(state.okAt[u], OK_MS) && !fresh(state.dead[u], RECHECK_MS)) || "";
+  }
+  async function stillOnline() {
+    if (navigator.onLine === false) return false;
+    const ctrl = new AbortController(), t = setTimeout(() => ctrl.abort(), 6000);
+    try { await fetch(IPTV + "cl.m3u", { method: "HEAD", cache: "no-store", signal: ctrl.signal }); return true; }
+    catch { return false; } finally { clearTimeout(t); }
+  }
+  async function probeRegion() {
+    const run = ++probeRun, live = () => run === probeRun;
+    probing = true;
+    let queue = [], qi = 0, picks = 0, check = null, offline = false;
+    const busy = new Set(), tried = new Set(), pend = [];
+    function next() {
+      for (let pass = 0; pass < 2; pass++) {
+        if (pass || !queue.length || picks % 30 === 0) { queue = probeQueue(); qi = 0; }
+        while (qi < queue.length) {
+          const c = queue[qi++];
+          if (busy.has(c)) continue;
+          const u = probeTarget(c, tried);
+          if (u) { picks++; tried.add(u); return [c, u]; }
+        }
+      }
+      return null;
+    }
+    function record(c, u, ok) {
+      const was = isDown(c);
+      if (ok) { state.okAt[u] = Date.now(); delete state.dead[u]; }
+      else state.dead[u] = Date.now();
+      saveSoon();
+      if (was !== isDown(c)) softRender();
+    }
+    // Si fallan muchas seguidas, puede ser que se cortó internet: lo confirmamos antes de marcarlas.
+    async function flush(force) {
+      if (!pend.length || (!force && pend.length < 10)) return;
+      if (!check) check = stillOnline().then((on) => {
+        check = null;
+        if (!live()) return;
+        if (on) pend.splice(0).forEach(([c, u]) => record(c, u, false));
+        else { pend.length = 0; offline = true; }
+      });
+      await check;
+    }
+    async function worker() {
+      while (live() && !offline) {
+        if (document.hidden) { await new Promise((ok) => document.addEventListener("visibilitychange", ok, { once: true })); continue; }
+        const job = next();
+        if (!job) break;
+        const [c, u] = job, t0 = Date.now();
+        busy.add(c);
+        const res = await probeUrl(u);
+        busy.delete(c);
+        // Si el teléfono se bloqueó o se cambió de app a medio camino, el resultado no sirve.
+        if (!live() || hiddenAt >= t0 || res === "?") continue;
+        if (res === "ok") { pend.splice(0).forEach(([pc, pu]) => record(pc, pu, false)); record(c, u, true); }
+        else { pend.push([c, u]); await flush(false); }
+      }
+    }
+    await Promise.all(Array.from({ length: PROBE_AT_ONCE }, worker));
+    if (live()) await flush(true);
+    if (!live()) return;
+    probing = false; save();
+    if (offline) addEventListener("online", () => { if (live()) probeRegion(); }, { once: true });
+  }
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) hiddenAt = Date.now();
+    else if (!probing && channels.length) probeRegion(); // al volver a la app, revisa lo que haya vencido
+  });
   function ago(t) {
     const m = Math.max(1, Math.round((Date.now() - t) / 60000));
     return m < 60 ? "hace " + m + " min" : "hace " + Math.round(m / 60) + " h";
@@ -773,7 +918,8 @@ const CONFIG = {
     } catch { if (!regionText) { loadFailed = true; toast("No pudimos cargar los canales. Revisa tu conexión."); } }
     loading = false;
     rebuild(); render();
-    loadStatus(r);
+    // El teléfono parte revisando apenas llega la revisión del servidor (o a los 5 s, si tarda).
+    Promise.race([loadStatus(r), new Promise((ok) => setTimeout(ok, 5000))]).then(() => { if (r.id === region().id) probeRegion(); });
     loadGuide(natCountry());
   }
 
@@ -1033,7 +1179,7 @@ const CONFIG = {
 
   function downNote(n) {
     return (n === 1 ? "Este canal no respondió" : "Estos canales no respondieron") + " en la última revisión" + (statusAt ? " (" + ago(statusAt) + ")" : "") +
-      ". Los revisamos solos cada pocas horas: cuando vuelven a transmitir, regresan a su categoría. Puedes tocarlos para probar igual.";
+      ". Los revisamos solos cada vez que abres la tele: cuando vuelven a transmitir, regresan a su categoría. Puedes tocarlos para probar igual.";
   }
   function render() {
     renderChips();
@@ -1065,7 +1211,11 @@ const CONFIG = {
         s.querySelector(".shelf-head").after(el("p", "down-note", downNote(dl.length)));
         parts.push(s);
       }
+      // Cada fila queda donde la persona la dejó (la portada se redibuja sola mientras se revisan canales).
+      const pos = new Map();
+      box.querySelectorAll(".shelf").forEach((s) => { const r = s.querySelector(".rail"), h = s.querySelector("h2"); if (r && h && r.scrollLeft) pos.set(h.textContent, r.scrollLeft); });
       box.replaceChildren(...parts);
+      if (pos.size) box.querySelectorAll(".shelf").forEach((s) => { const r = s.querySelector(".rail"), h = s.querySelector("h2"); if (r && h && pos.has(h.textContent)) r.scrollLeft = pos.get(h.textContent); });
       return;
     }
     const arr = visible();
@@ -1371,7 +1521,7 @@ const CONFIG = {
   function addList(l) {
     const n = parseM3U(l.text, l.id).length;
     if (!n) throw new Error("vacía");
-    state.lists.push(l); save(); rebuild(); render(); renderMine();
+    state.lists.push(l); save(); rebuild(); render(); renderMine(); probeRegion();
     return n;
   }
   $("#addForm").addEventListener("submit", async (e) => {

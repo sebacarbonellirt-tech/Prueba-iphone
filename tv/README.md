@@ -58,20 +58,32 @@ Los horarios se muestran en la hora del teléfono.
 
 ## Canales inactivos (automático)
 
-Dos revisiones trabajan juntas:
+Tres revisiones trabajan juntas, y ninguna espera a que alguien toque el canal:
 
-1. **En el servidor** (`api/estado.js`, una función de Vercel): prueba todas las señales de la
+1. **En cada teléfono, apenas se abre la tele**: en segundo plano, el teléfono prueba las señales
+   de la región. Empieza por lo que está a la vista (nacionales, «Seguir viendo», favoritos y las
+   primeras tarjetas de cada fila) y sigue con el resto. Los canales que no responden pasan solos
+   a «Canales inactivos» en pocos segundos y en su lugar aparecen otros que sí funcionan. Prueba
+   desde el país de quien mira y solo descarga el comienzo de cada señal (unos pocos kB).
+   - Una señal que respondió no se vuelve a probar durante 1 hora (`OK_MS`); una caída se vuelve
+     a probar después de 1 hora (`RECHECK_MS`) y, si volvió, regresa sola a su categoría.
+   - Si fallan muchas seguidas, primero confirma que hay internet: si se cortó, no marca nada.
+   - Si la persona está deslizando la pantalla, espera a que termine para mover las tarjetas.
+   - En iPhone, algunas señales no dejan que otra página las lea, pero el iPhone las reproduce
+     igual: en esas solo se confirma que su servidor contesta. En Android y computadores no se
+     pueden reproducir, así que ahí se marcan como inactivas.
+2. **En el servidor** (`api/estado.js`, una función de Vercel): prueba todas las señales de la
    región y devuelve las que no responden (error, página caída, o más de 6 segundos sin
    contestar). Vercel guarda el resultado 6 horas, así que la revisión corre pocas veces al
    día y es igual para todos los visitantes. Las señales que niegan el acceso (403, típico de
    las que solo se ven en su país) **no** se marcan como caídas, porque el servidor está en
-   EE. UU. y podrían funcionar en Chile.
-2. **En cada teléfono**: si un canal falla al reproducirlo, pasa de inmediato a «Canales
-   inactivos» en ese teléfono durante 12 horas. Si luego funciona, se quita solo.
+   EE. UU. y podrían funcionar en Chile (la revisión del teléfono sí las prueba).
+3. **Al reproducir**: si un canal falla al verlo, pasa de inmediato a «Canales inactivos» en ese
+   teléfono durante 12 horas. Si luego funciona, se quita solo.
 
 Los botones «Siguiente» y «Ver un canal ahora» se saltan los inactivos. Los inactivos se pueden
-tocar igual para probarlos. Para cambiar los tiempos: `TIEMPO_POR_SENAL` y `s-maxage` en
-`api/estado.js`, y `DEAD_MS` en `index.html`.
+tocar igual para probarlos. Para cambiar los tiempos: `PROBE_MS`, `PROBE_AT_ONCE`, `OK_MS`,
+`RECHECK_MS` y `DEAD_MS` en `index.html`; `TIEMPO_POR_SENAL` y `s-maxage` en `api/estado.js`.
 
 ## Cómo se gana dinero
 

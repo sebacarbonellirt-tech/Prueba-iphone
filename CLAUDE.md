@@ -33,7 +33,7 @@ de la app, nunca los canales) y con auspiciadores. Es una PWA instalable en iPho
 | `tv/api/estado.js` | Función de Vercel: prueba las señales de una lista y devuelve las caídas (caché 6 h). |
 | `tv/api/guia.js` | Función de Vercel: guía de programación (IPTV-EPG.org + EPGShare01, XMLTV), caché 3 h. Descarta rellenos tipo «No Data». |
 | `tv/vercel.json` | `maxDuration` 60 s para las dos funciones. |
-| `tv/sw.js` | Service worker, red primero (`CACHE = "antena-tv-v3"`; subir el número si cambian archivos base). |
+| `tv/sw.js` | Service worker, red primero (`CACHE = "antena-tv-v4"`; subir el número si cambian archivos base). |
 | `tv/herramientas/codigos.html` | Crea códigos de activación de Plus y su versión cifrada (SHA-256). |
 | `tv/README.md` | Documentación completa para el dueño (mantenerla al día con cada cambio). |
 
@@ -43,7 +43,9 @@ de la app, nunca los canales) y con auspiciadores. Es una PWA instalable en iPho
 - Fila **Nacionales** por país (`CONFIG.nacionales`): si la lista trae la señal oficial se ve en la app;
   si no, la tarjeta abre el sitio oficial del canal (links comprobados para CL, AR, MX, CO, PE, ES).
 - Fila **Países** con banderas. Buscador global sin tildes. Favoritos, recientes, AirPlay, imagen en imagen.
-- **Canales inactivos** automáticos: revisión del servidor (`api/estado`) + fallos en el teléfono (12 h).
+- **Canales inactivos** automáticos, sin esperar a que alguien toque el canal: el teléfono prueba en segundo plano
+  todas las señales apenas abre la tele (`probeRegion()`, lo visible primero, 6 a la vez, resultados 1 h), más la
+  revisión del servidor (`api/estado`, 6 h) y los fallos al reproducir (12 h). Si se corta internet no marca nada.
 - **Señal de respaldo**: entradas del mismo canal (mismo `tvg-id`, o mismo nombre y país) se juntan en una
   tarjeta (`c.urls`); si una señal falla o no arranca en 15 s (`STALL_MS`) pasa sola a la siguiente;
   botón «⇄ 1/2» junto a «En vivo». Un canal es inactivo solo si fallan todas sus señales.
