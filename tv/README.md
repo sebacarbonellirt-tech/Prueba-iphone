@@ -98,10 +98,17 @@ Para sumar canales propios o de canales que te escriban, crea un archivo `tv/can
 y agrégalo como región (`{ id: "mios", nombre: "Destacados", url: "canales.m3u" }`), o
 súmalo desde «Mis listas».
 
-## Publicar
+## Publicada
 
-GitHub Pages (Settings → Pages) o Vercel. La tele queda en `…/Prueba-iphone/tv/`.
+**https://antena-tv.vercel.app** (proyecto `antena-tv` en el equipo ArmaTienda de Vercel,
+carpeta raíz `tv/`, rama `claude/exciting-pasteur-f1q3l4`).
+
 En el iPhone: Safari → Compartir → «Agregar a pantalla de inicio».
+
+Como la cuenta de Vercel no tiene GitHub conectado, **los cambios no se publican solos**:
+después de editar, pídele a Claude que vuelva a publicar, o conecta GitHub en Vercel
+(Account Settings → Authentication) y vincula el repositorio al proyecto para que cada
+cambio se publique automáticamente.
 
 ## Lo legal
 
