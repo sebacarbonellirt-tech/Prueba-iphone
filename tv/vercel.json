@@ -1,5 +1,6 @@
 {
   "functions": {
-    "api/estado.js": { "maxDuration": 60 }
+    "api/estado.js": { "maxDuration": 60 },
+    "api/guia.js": { "maxDuration": 60 }
   }
 }

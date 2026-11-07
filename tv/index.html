@@ -109,6 +109,28 @@ p { margin: 0; }
 .controls { display: flex; gap: 6px; flex: none; }
 @media (max-width: 420px) { .controls .hide-xs { display: none; } }
 .now .logo { width: 52px; height: 38px; }
+.alt-btn { min-height: 26px; margin-left: 8px; vertical-align: middle; padding: 0 9px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font: 600 .74rem/1 var(--f-body); cursor: pointer; white-space: nowrap; }
+
+/* Guía: ahora y después */
+.prog { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; width: 100%; margin-top: 10px; padding: 10px 12px; border: 0; border-radius: 12px; background: var(--surface); color: var(--ink); text-align: left; font: inherit; cursor: pointer; }
+.prog .p-now { min-width: 0; font-size: .92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prog .p-now b { font-weight: 700; }
+.p-tag { font: 600 .62rem/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--live); margin-right: 6px; }
+.prog .p-more { grid-row: span 3; align-self: center; font-weight: 700; font-size: .85rem; color: var(--accent); }
+.p-bar { height: 4px; border-radius: 4px; background: var(--tile); overflow: hidden; }
+.p-bar i { display: block; height: 100%; width: 0; background: var(--live); border-radius: 4px; }
+.prog .p-next { min-width: 0; font-size: .8rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.guide { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.guide li { display: grid; grid-template-columns: 54px 1fr; gap: 10px; padding: 9px 12px; border-radius: 10px; }
+.guide li time { font: 600 .82rem/1.35 var(--f-mono); color: var(--muted); }
+.guide li.on { background: var(--surface); }
+.guide li.on time { color: var(--live); }
+.guide li.past { opacity: .55; }
+.guide li.day { display: block; padding: 14px 12px 4px; font: 600 .7rem/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.guide .tag { margin-left: 6px; }
+.guide-lock { display: grid; gap: 10px; justify-items: start; padding: 16px; border-radius: var(--r); background: color-mix(in srgb, var(--plus) 14%, var(--surface)); }
+.guide-lock b { font: 800 1.02rem/1.2 var(--f-display); }
+.guide-lock span { font-size: .88rem; color: var(--muted); }
 
 /* Multipantalla (Plus) */
 .multi { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
@@ -346,6 +368,10 @@ const CONFIG = {
   porFila: 24,       // canales por fila en la portada
   porPagina: 120,    // canales por página al filtrar o buscar
 
+  // Guía de programación (api/guia.js). «Ahora» y «Después» se ven gratis; la guía del día completa es de Plus.
+  // Pon soloPlus: false para que todos vean la guía completa.
+  guia: { soloPlus: true },
+
   // Señales retiradas a pedido de su dueño (pega aquí el nombre exacto o el link).
   ocultar: [],
 
@@ -376,7 +402,7 @@ const CONFIG = {
       { icono: "⦸", titulo: "Sin anuncios", texto: "Desaparecen los banners de auspiciadores y promociones." },
       { icono: "◐", titulo: "Temas de color", texto: "Elige modo claro, oscuro o automático." },
       { icono: "♥", titulo: "Apoyas el proyecto", texto: "Con tu aporte agregamos funciones y mantenemos la tele gratis para todos." },
-      { icono: "☰", titulo: "Guía de programación", texto: "Qué dan ahora y después en cada canal.", pronto: true },
+      { icono: "☰", titulo: "Guía de programación", texto: "Toda la programación de hoy y mañana en cada canal (lo que dan ahora y después se ve gratis)." },
     ],
     // Códigos de activación (se guardan cifrados). Créalos en herramientas/codigos.html.
     // El primero es el código de PRUEBA «ANT-PRUEBA-2026»: bórralo antes de vender.
@@ -428,7 +454,7 @@ const CONFIG = {
       <div class="now" id="nowRow">
         <div class="logo" id="nowLogo" aria-hidden="true"></div>
         <div class="meta">
-          <span class="live">En vivo</span>
+          <span class="live">En vivo</span><button class="alt-btn" id="altBtn" type="button" hidden>Señal 1/2</button>
           <p class="name" id="nowName"></p>
           <p class="group" id="nowGroup"></p>
         </div>
@@ -440,6 +466,12 @@ const CONFIG = {
           <button class="icon-btn hide-xs" id="pip" aria-label="Imagen en imagen" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="11" width="7" height="6" rx="1" fill="currentColor"/></svg></button>
         </div>
       </div>
+      <button class="prog" id="nowProg" type="button" hidden aria-label="Ver la guía de programación">
+        <span class="p-now"><span class="p-tag">Ahora</span><b id="pNow"></b></span>
+        <span class="p-more" aria-hidden="true">Guía ›</span>
+        <span class="p-bar" aria-hidden="true"><i id="pBar"></i></span>
+        <span class="p-next" id="pNext"></span>
+      </button>
     </div>
   </section>
 
@@ -504,6 +536,23 @@ const CONFIG = {
       </form>
       <p class="msg" id="addMsg" hidden></p>
     </div>
+  </div>
+</dialog>
+
+<!-- Guía de programación -->
+<dialog id="guideSheet" aria-labelledby="guideTitle">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h2 id="guideTitle">Guía</h2>
+      <button class="icon-btn" data-close aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <ol class="guide" id="guideList"></ol>
+    <div class="guide-lock" id="guideLock" hidden>
+      <b>La guía completa es parte de Plus</b>
+      <span>Ve toda la programación de hoy y mañana en cada canal.</span>
+      <button class="btn sm plus" id="guidePlus" type="button">Ver Plus</button>
+    </div>
+    <p class="note" id="guideNote">Horarios de IPTV-EPG.org y EPGShare01, en tu hora local. Pueden cambiar sin aviso.</p>
   </div>
 </dialog>
 
@@ -611,19 +660,19 @@ const CONFIG = {
         name = name.replace(/\[([^\]]*)\]/g, (_, t) => { tags.push(t); return ""; })
           .replace(/\s*\((\d{3,4}[pi]|4K|SD|HD|FHD|UHD)\)/gi, "").replace(/\s+/g, " ").trim();
         const cc = (a["tvg-id"] || "").match(/\.([a-z]{2})(?:@|$)/i);
-        info = { name, logo: a["tvg-logo"] || "", groups: (a["group-title"] || "").split(";").map((g) => g.trim()).filter(Boolean),
+        info = { name, id: (a["tvg-id"] || "").split("@")[0], logo: a["tvg-logo"] || "", groups: (a["group-title"] || "").split(";").map((g) => g.trim()).filter(Boolean),
           cc: cc ? cc[1].toLowerCase() : (a["tvg-country"] || "").slice(0, 2).toLowerCase(), geo: tags.some((t) => /geo/i.test(t)), part: tags.some((t) => /24\/7/.test(t)) };
       } else if (/^#EXTGRP:/i.test(line)) extGroup = line.slice(8).trim();
       else if (line.startsWith("#")) continue;
       else if (/^https?:\/\//i.test(line)) {
-        const i = info || { name: "", logo: "", groups: [], cc: "" };
+        const i = info || { name: "", id: "", logo: "", groups: [], cc: "" };
         const rawGroups = i.groups.length ? i.groups : extGroup ? [extGroup] : [];
         if (rawGroups.some((g) => ADULT.test(g)) || ADULT.test(i.name)) { info = null; continue; }
         const cats = [...new Set(rawGroups.map((g) => GROUPS[g.toLowerCase()] || g))];
         if (!cats.length) cats.push("Otros");
         const name = i.name || decodeURIComponent(line.split("/").pop().split("?")[0]) || "Canal";
         if (!hidden.has(norm(name)) && !hidden.has(norm(line)) && !(src === "region" && noOficial(name, line)))
-          out.push({ name, logo: i.logo, cats, group: cats[0], cc: i.cc, geo: i.geo, part: i.part, url: line, src });
+          out.push({ name, id: i.id, logo: i.logo, cats, group: cats[0], cc: i.cc, geo: i.geo, part: i.part, url: line, src });
         info = null; extGroup = "";
       }
     }
@@ -638,16 +687,22 @@ const CONFIG = {
   const DEAD_MS = 12 * 3600 * 1000;
   let serverDown = new Set(), statusAt = 0;
   if (!state.dead || typeof state.dead !== "object") state.dead = {};
-  const isDown = (c) => serverDown.has(c.url) || (state.dead[c.url] && Date.now() - state.dead[c.url] < DEAD_MS);
+  // Un canal puede tener varias señales (c.urls): está inactivo solo si fallan todas.
+  const urlDown = (u) => serverDown.has(u) || (state.dead[u] && Date.now() - state.dead[u] < DEAD_MS);
+  const isDown = (c) => c.urls.every(urlDown);
   const activeList = () => channels.filter((c) => !isDown(c));
   const downList = () => channels.filter(isDown);
-  function markDead(c) {
-    if (state.dead[c.url]) return;
-    state.dead[c.url] = Date.now(); save(); render();
+  function markDead(c, u) {
+    if (state.dead[u]) return;
+    const was = isDown(c);
+    state.dead[u] = Date.now(); save();
+    if (!was && isDown(c)) render();
   }
-  function markAlive(c) {
-    if (!state.dead[c.url] && !serverDown.has(c.url)) return;
-    delete state.dead[c.url]; serverDown.delete(c.url); save(); render();
+  function markAlive(c, u) {
+    if (!state.dead[u] && !serverDown.has(u)) return;
+    const was = isDown(c);
+    delete state.dead[u]; serverDown.delete(u); save();
+    if (was) render();
   }
   function pruneDead() {
     for (const [u, t] of Object.entries(state.dead)) if (Date.now() - t >= DEAD_MS) delete state.dead[u];
@@ -675,14 +730,28 @@ const CONFIG = {
     loadRegion(); scrollTo({ top: 0, behavior: "smooth" });
   }
   let regionText = "";
+  let urlMap = new Map();
+  // Junta las señales del mismo canal (mismo tvg-id, o mismo nombre y país) en una sola tarjeta:
+  // la primera es la principal y las demás quedan de respaldo.
   function rebuild() {
-    const seen = new Set();
-    channels = [];
+    const groups = new Map();
+    channels = []; urlMap = new Map();
     const sources = [...state.lists.map((l) => [l.text, l.id]), [regionText, "region"]];
     if (loadFailed && !regionText) sources.push([DEMO, "demo"]);
     for (const [t, id] of sources) for (const c of parseM3U(t || "", id)) {
-      if (seen.has(c.url)) continue;
-      seen.add(c.url); channels.push(c);
+      if (urlMap.has(c.url)) continue;
+      const keys = [c.id && "i:" + c.id.toLowerCase(), "n:" + norm(c.name) + "|" + c.cc].filter(Boolean);
+      const g = keys.map((k) => groups.get(k)).find(Boolean);
+      if (g) {
+        g.urls.push(c.url); urlMap.set(c.url, g);
+        if (!g.logo && c.logo) g.logo = c.logo;
+        if (!g.id && c.id) g.id = c.id;
+        g.geo = g.geo && c.geo; g.part = g.part && c.part;
+        keys.forEach((k) => groups.has(k) || groups.set(k, g));
+        continue;
+      }
+      c.urls = [c.url]; urlMap.set(c.url, c); channels.push(c);
+      keys.forEach((k) => groups.set(k, c));
     }
     channels.forEach((c, i) => { c.n = i; c.h = [...c.name].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 360, 7); });
   }
@@ -705,11 +774,95 @@ const CONFIG = {
     loading = false;
     rebuild(); render();
     loadStatus(r);
+    loadGuide(natCountry());
   }
+
+  /* ---------- Guía de programación (api/guia.js) ---------- */
+  const guides = {}; // país → { "<tvg-id>" | "n:<nombre>": [[inicio, fin, título]] } (null mientras carga)
+  // Igual que gnorm() en api/guia.js.
+  const gnorm = (s) => norm(s).replace(/^[a-z]{2} - /, "").replace(/\([^)]*\)|\[[^\]]*\]/g, " ")
+    .replace(/\b(hd|sd|fhd|uhd|4k|tv|canal|television)\b/g, " ").replace(/[^a-z0-9]/g, "");
+  const tFmt = new Intl.DateTimeFormat("es-CL", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  const dFmt = new Intl.DateTimeFormat("es-CL", { weekday: "long", day: "numeric", month: "long" });
+  const hhmm = (m) => tFmt.format(new Date(m * 60000));
+  const nowMin = () => Date.now() / 60000;
+  function loadGuide(cc) {
+    if (!/^[a-z]{2}$/.test(cc || "") || cc in guides) return;
+    guides[cc] = null;
+    fetch("api/guia?pais=" + cc)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        guides[cc] = j && j.canales ? j.canales : {};
+        if (Object.keys(guides[cc]).length) { refreshMeta(); paintProg(); }
+      })
+      .catch(() => { guides[cc] = {}; setTimeout(() => delete guides[cc], 10 * 60000); });
+  }
+  function programmes(c) {
+    const g = c && guides[c.cc || region().cc];
+    if (!g) return null;
+    return (c.id && g[c.id]) || g["n:" + gnorm(c.name)] || null;
+  }
+  function onAir(c) {
+    const p = programmes(c), t = nowMin();
+    return (p && p.find((x) => x[0] <= t && t < x[1])) || null;
+  }
+  function nextUp(c) {
+    const p = programmes(c), t = nowMin();
+    return (p && p.find((x) => x[0] > t)) || null;
+  }
+  // Fila «Ahora / Después» bajo el reproductor.
+  function paintProg() {
+    const c = multiOn ? slots[sel] : current, box = $("#nowProg");
+    const on = c && onAir(c), nx = c && nextUp(c);
+    box.hidden = !on && !nx;
+    if (box.hidden) return;
+    const t = nowMin();
+    $("#pNow").textContent = on ? on[2] : "Sin información";
+    $("#pBar").style.width = on ? Math.min(100, ((t - on[0]) / (on[1] - on[0])) * 100).toFixed(1) + "%" : "0";
+    $("#pNext").textContent = [on ? hhmm(on[0]) + "–" + hhmm(on[1]) : "", nx ? "Después: " + nx[2] + " (" + hhmm(nx[0]) + ")" : ""].filter(Boolean).join(" · ");
+  }
+  function dayLabel(d) {
+    const today = new Date(), tomorrow = new Date(Date.now() + 864e5);
+    if (d.toDateString() === today.toDateString()) return "Hoy";
+    return (d.toDateString() === tomorrow.toDateString() ? "Mañana, " : "") + dFmt.format(d);
+  }
+  function openGuide() {
+    const c = multiOn ? slots[sel] : current;
+    if (!c) return;
+    const t = nowMin(), full = isPlus() || !CONFIG.guia.soloPlus;
+    const coming = (programmes(c) || []).filter((x) => x[1] > t);
+    const items = [];
+    let day = "";
+    for (const x of full ? coming : coming.slice(0, 2)) {
+      const d = new Date(x[0] * 60000), on = x[0] <= t;
+      if (d.toDateString() !== day && !on) { day = d.toDateString(); items.push(el("li", "day", dayLabel(d))); }
+      else if (!day) { day = new Date().toDateString(); items.push(el("li", "day", "Hoy")); }
+      const li = el("li", on ? "on" : ""), tm = el("time", "", hhmm(x[0])), ti = el("span", "", x[2]);
+      tm.dateTime = d.toISOString();
+      if (on) ti.append(el("span", "p-tag tag", "Ahora"));
+      li.append(tm, ti); items.push(li);
+    }
+    $("#guideTitle").textContent = c.name;
+    $("#guideList").replaceChildren(...items);
+    $("#guideLock").hidden = full || coming.length <= 2;
+    $("#guideSheet").showModal();
+  }
+  // Actualiza la línea gris de las tarjetas a la vista sin redibujar (así no se pierde el scroll de las filas).
+  function refreshMeta() {
+    document.querySelectorAll(".card[data-url]").forEach((b) => {
+      const c = byUrl(b.dataset.url), m = b.querySelector(".cmeta");
+      if (c && m) m.textContent = cardMeta(c);
+    });
+  }
+  setInterval(() => { if (!document.hidden) { paintProg(); refreshMeta(); } }, 60000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { paintProg(); refreshMeta(); } });
 
   /* ---------- Vista ---------- */
   let filter = "all", query = "", shown = CONFIG.porPagina, current = null, playlist = [];
-  const byUrl = (u) => channels.find((c) => c.url === u);
+  const byUrl = (u) => urlMap.get(u);
+  // Favoritos y recientes guardan links; varios links pueden ser el mismo canal.
+  const chanList = (urls) => [...new Set(urls.map(byUrl).filter(Boolean))];
+  const isFav = (c) => c.urls.some((u) => state.favs.includes(u));
   function catList() {
     const counts = new Map();
     for (const c of activeList()) for (const g of c.cats) counts.set(g, (counts.get(g) || 0) + 1);
@@ -734,14 +887,20 @@ const CONFIG = {
     }
     return box;
   }
+  // Línea gris de la tarjeta: lo que dan ahora (si hay guía) o la categoría.
+  function cardMeta(c) {
+    if (isDown(c)) return [flag(c.cc), "Sin señal"].filter(Boolean).join(" · ");
+    const on = onAir(c);
+    if (on) return [flag(c.cc), on[2]].filter(Boolean).join(" ");
+    return [flag(c.cc), c.group, c.geo ? "Solo en su país" : "", c.part ? "No 24/7" : ""].filter(Boolean).join(" · ");
+  }
   function card(c, list) {
     const down = isDown(c);
     const b = el("button", "card" + (down ? " down" : "")); b.type = "button"; b.dataset.url = c.url;
     const lg = logoEl(c);
-    if (state.favs.includes(c.url)) lg.append(el("span", "fav", "★"));
+    if (isFav(c)) lg.append(el("span", "fav", "★"));
     if (current && current.url === c.url) { b.setAttribute("aria-current", "true"); lg.append(el("span", "playing", "VIENDO")); }
-    const meta = [flag(c.cc), down ? "Sin señal" : c.group, !down && c.geo ? "Solo en su país" : "", !down && c.part ? "No 24/7" : ""].filter(Boolean).join(" · ");
-    b.append(lg, el("span", "cname", c.name), el("span", "cmeta", meta));
+    b.append(lg, el("span", "cname", c.name), el("span", "cmeta", cardMeta(c)));
     b.setAttribute("aria-label", c.name + ", " + (down ? "sin señal" : c.group));
     b.onclick = () => pick(c, list);
     return b;
@@ -837,8 +996,8 @@ const CONFIG = {
     let arr;
     // La búsqueda mira todos los canales, sin importar la categoría elegida.
     if (query) { const q = norm(query); return channels.filter((c) => norm(c.name).includes(q) || c.cats.some((g) => norm(g).includes(q))); }
-    if (filter === "fav") arr = state.favs.map(byUrl).filter(Boolean);
-    else if (filter === "recent") arr = state.recent.map(byUrl).filter(Boolean);
+    if (filter === "fav") arr = chanList(state.favs);
+    else if (filter === "recent") arr = chanList(state.recent);
     else if (filter === "down") arr = downList();
     else if (filter === "all") arr = activeList();
     else arr = activeList().filter((c) => c.cats.includes(filter));
@@ -882,9 +1041,9 @@ const CONFIG = {
       const parts = [];
       if (loadFailed && !regionText) parts.push(Object.assign(el("p", "msg err", "No pudimos cargar los canales de «" + region().nombre + "». Mientras tanto, te dejamos videos de prueba."), { style: "margin-top:14px" }));
       const nat = nationalShelf(); if (nat) parts.push(nat);
-      const rec = state.recent.map(byUrl).filter(Boolean);
+      const rec = chanList(state.recent);
       if (rec.length) parts.push(shelf("Seguir viendo", rec, "recent"));
-      const favs = state.favs.map(byUrl).filter(Boolean);
+      const favs = chanList(state.favs);
       if (favs.length) parts.push(shelf("Tus favoritos", favs, "fav"));
       if (channels.length) parts.push(countryShelf());
       const act = activeList();
@@ -953,7 +1112,8 @@ const CONFIG = {
   let detach = null, attempt = 0;
   const setOverlay = (w, msg) => { $("#loading").hidden = w !== "loading"; $("#failed").hidden = w !== "failed"; if (msg) $("#failedMsg").textContent = msg; };
   function failMsg(c) {
-    return failReason(c) + " Lo dejamos en «Canales inactivos».";
+    const n = c.urls.length;
+    return (n > 1 ? "Probamos las " + n + " señales de este canal y ninguna respondió. " : failReason(c) + " ") + "Lo dejamos en «Canales inactivos».";
   }
   function failReason(c) {
     if (location.protocol === "https:" && /^http:\/\//i.test(c.url)) return "Esta señal usa http:// y el navegador la bloquea en una página segura.";
@@ -966,22 +1126,25 @@ const CONFIG = {
     play(c, list);
   }
 
+  // Orden en que se prueban las señales: primero las que no han fallado y las https.
+  const blockedHttp = (u) => location.protocol === "https:" && /^http:\/\//i.test(u);
+  const sourcesFor = (c) => [...c.urls].sort((a, b) => (urlDown(a) - urlDown(b)) || (blockedHttp(a) - blockedHttp(b)));
+  const STALL_MS = 15000; // si una señal no arranca en este tiempo y hay otra, se pasa a la otra
+  let curUrl = "", curOrder = [], curK = 0, curFail = null, stall = 0;
   async function play(c, list) {
     if (list) playlist = list;
     if (!playlist.includes(c)) playlist = channels;
     current = c; const mine = ++attempt;
+    loadGuide(c.cc || region().cc);
     $("#stage").hidden = false;
     updateNow(c);
-    state.recent = [c.url, ...state.recent.filter((u) => u !== c.url)].slice(0, 30); save();
+    state.recent = [c.url, ...state.recent.filter((u) => !c.urls.includes(u))].slice(0, 30); save();
     document.querySelectorAll('.card[aria-current="true"]').forEach((e) => { e.removeAttribute("aria-current"); e.querySelector(".playing")?.remove(); });
     document.querySelectorAll(".card").forEach((e) => { if (e.dataset.url === c.url) { e.setAttribute("aria-current", "true"); e.querySelector(".logo").append(el("span", "playing", "VIENDO")); } });
     $("#hero").hidden = true;
-    if (detach) detach();
-    setOverlay("loading");
-    detach = await attach(video, c.url, () => { if (mine === attempt) { setOverlay("failed", failMsg(c)); markDead(c); } });
+    curOrder = sourcesFor(c);
+    await tune(c, mine, 0, false);
     if (mine !== attempt) return;
-    // iPhone no deja reproducir con sonido sin un toque: en ese caso quedan los controles a la vista.
-    video.play().catch(() => { if (mine === attempt && $("#failed").hidden) setOverlay(null); });
     if ("mediaSession" in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({ title: c.name, artist: c.group, album: CONFIG.marca, artwork: c.logo ? [{ src: c.logo }] : [] });
       navigator.mediaSession.setActionHandler("previoustrack", () => step(-1));
@@ -989,14 +1152,50 @@ const CONFIG = {
     }
     if (innerWidth < 900 && scrollY > 200) scrollTo({ top: 0, behavior: "smooth" });
   }
+  // Conecta la señal número k del canal. Si falla y quedan otras, pasa sola a la siguiente.
+  async function tune(c, mine, k, manual) {
+    const u = curOrder[k];
+    curUrl = u; curK = k; clearTimeout(stall);
+    paintAlt(c);
+    if (detach) detach();
+    setOverlay("loading");
+    let done = false;
+    const fail = () => {
+      if (done || mine !== attempt || curUrl !== u) return;
+      done = true; clearTimeout(stall);
+      markDead(c, u);
+      if (k + 1 < curOrder.length) { toast("Esa señal no respondió: probando otra de " + c.name); tune(c, mine, k + 1); }
+      else setOverlay("failed", failMsg(c));
+    };
+    curFail = fail;
+    detach = await attach(video, u, fail);
+    if (mine !== attempt || curUrl !== u) return;
+    if (k + 1 < curOrder.length) stall = setTimeout(() => { if (video.readyState < 2) fail(); }, STALL_MS);
+    // iPhone no deja reproducir con sonido sin un toque: en ese caso quedan los controles a la vista.
+    video.play().catch((e) => {
+      if (e && e.name === "NotAllowedError") clearTimeout(stall);
+      if (mine === attempt && $("#failed").hidden) setOverlay(null);
+    });
+    if (manual) toast("Señal " + (k + 1) + " de " + curOrder.length);
+  }
+  function paintAlt(c) {
+    const b = $("#altBtn"), n = c && !multiOn ? c.urls.length : 0;
+    b.hidden = n < 2;
+    if (n < 2) return;
+    b.textContent = "⇄ " + (curK + 1) + "/" + n;
+    b.title = "Cambiar de señal";
+    b.setAttribute("aria-label", "Cambiar de señal (" + (curK + 1) + " de " + n + ")");
+  }
+  $("#altBtn").onclick = () => { if (current && !multiOn && curOrder.length > 1) tune(current, attempt, (curK + 1) % curOrder.length, true); };
   function updateNow(c) {
     $("#nowName").textContent = c.name;
     $("#nowGroup").textContent = [flag(c.cc), c.cats.join(", ")].filter(Boolean).join(" ");
     $("#nowLogo").replaceWith(Object.assign(logoEl(c), { id: "nowLogo" }));
-    const fav = state.favs.includes(c.url);
+    const fav = isFav(c);
     $("#favBtn").setAttribute("aria-pressed", String(fav));
     $("#favBtn").setAttribute("aria-label", fav ? "Quitar de favoritos" : "Agregar a favoritos");
     document.title = c.name + " · " + CONFIG.marca;
+    paintProg();
   }
   function step(d) {
     if (!current) return;
@@ -1010,9 +1209,9 @@ const CONFIG = {
     const n = arr[(at + d + arr.length) % arr.length];
     if (n) play(n, arr);
   }
-  video.addEventListener("playing", () => { setOverlay(null); if (current) markAlive(current); });
+  video.addEventListener("playing", () => { clearTimeout(stall); setOverlay(null); if (current) markAlive(current, curUrl); });
   video.addEventListener("waiting", () => { if ($("#failed").hidden) setOverlay("loading"); });
-  video.addEventListener("error", () => { if (current && video.getAttribute("src")) { setOverlay("failed", failMsg(current)); markDead(current); } });
+  video.addEventListener("error", () => { if (current && video.getAttribute("src") && curFail) curFail(); });
   video.addEventListener("canplay", () => { if (video.paused && $("#failed").hidden) setOverlay(null); });
   $("#retry").onclick = () => current && play(current);
   $("#skip").onclick = () => step(1);
@@ -1020,8 +1219,8 @@ const CONFIG = {
   $("#next").onclick = () => step(1);
   $("#favBtn").onclick = () => {
     const c = multiOn ? slots[sel] : current; if (!c) return;
-    const i = state.favs.indexOf(c.url);
-    if (i >= 0) state.favs.splice(i, 1); else state.favs.unshift(c.url);
+    const i = isFav(c) ? 0 : -1;
+    if (i >= 0) state.favs = state.favs.filter((u) => !c.urls.includes(u)); else state.favs.unshift(c.url);
     save(); updateNow(c); render();
     toast(i >= 0 ? "Quitado de favoritos" : "Guardado en favoritos");
   };
@@ -1045,7 +1244,7 @@ const CONFIG = {
 
   /* ---------- Multipantalla (Plus) ---------- */
   let multiOn = false, slots = [null, null, null, null], sel = 0;
-  const slotStops = [null, null, null, null];
+  const slotStops = [null, null, null, null], slotUrl = ["", "", "", ""];
   const sndOn = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8a5 5 0 0 1 0 8" stroke="currentColor" stroke-width="2" fill="none"/></svg>';
   const sndOff = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2"/></svg>';
   const slotEl = (i) => $("#multi").children[i];
@@ -1071,12 +1270,21 @@ const CONFIG = {
     x.onclick = (e) => { e.stopPropagation(); clearSlot(i); };
     ui.replaceChildren(el("span", "lbl", c.name + (note ? " · " + note : "")), snd, x);
   }
-  async function startSlot(i) {
+  async function startSlot(i, k = 0, order) {
     if (slotStops[i]) { slotStops[i](); slotStops[i] = null; }
     const c = slots[i]; if (!c) return;
-    const v = slotEl(i).querySelector("video");
-    slotStops[i] = await attach(v, c.url, () => { if (slots[i] === c) { paintSlot(i, "sin señal"); markDead(c); } });
-    v.addEventListener("playing", () => { if (slots[i] === c) markAlive(c); }, { once: true });
+    order = order || sourcesFor(c);
+    const u = order[k], v = slotEl(i).querySelector("video");
+    let done = false;
+    const fail = () => {
+      if (done || slots[i] !== c || slotUrl[i] !== u) return;
+      done = true; markDead(c, u);
+      if (k + 1 < order.length) startSlot(i, k + 1, order); else paintSlot(i, "sin señal");
+    };
+    slotUrl[i] = u;
+    v.onerror = () => { if (v.getAttribute("src")) fail(); };
+    v.onplaying = () => { if (slots[i] === c && slotUrl[i] === u) markAlive(c, u); };
+    slotStops[i] = await attach(v, u, fail);
     v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
   }
   function selectSlot(i) {
@@ -1102,7 +1310,8 @@ const CONFIG = {
     if (!isPlus()) return openPlus("La multipantalla es parte de Plus: mira hasta 4 canales a la vez.");
     multiOn = true;
     if (detach) { detach(); detach = null; }
-    setOverlay(null);
+    clearTimeout(stall); curFail = null; curUrl = "";
+    setOverlay(null); $("#altBtn").hidden = true;
     slots = [current, null, null, null]; sel = 0;
     $("#single").hidden = true; $("#multiWrap").hidden = false; $("#stage").hidden = false; $("#hero").hidden = true;
     $("#multiBtn").setAttribute("aria-pressed", "true");
@@ -1121,6 +1330,8 @@ const CONFIG = {
     if (keep) play(keep); else { $("#stage").hidden = true; current = null; render(); }
   }
   $("#multiBtn").onclick = () => (multiOn ? exitMulti() : enterMulti());
+  $("#nowProg").onclick = openGuide;
+  $("#guidePlus").onclick = () => { $("#guideSheet").close(); openPlus("La guía completa es parte de Plus: toda la programación de hoy y mañana."); };
   $("#multiExit").onclick = exitMulti;
 
   /* ---------- Buscador ---------- */

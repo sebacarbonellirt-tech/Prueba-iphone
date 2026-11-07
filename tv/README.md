@@ -22,8 +22,10 @@ tv/
 | Nacionales | Primera fila de la portada: los canales de señal abierta del país (en «En español», de Chile). Si la lista trae su señal oficial, se ve en la app; si no, la tarjeta abre su transmisión en vivo en el sitio oficial. Hay links oficiales comprobados para Chile, Argentina, México, Colombia, Perú y España (los de España suelen verse solo desde España). Se editan en `CONFIG.nacionales`. |
 | Países | Fila de banderas con 21 países (Latinoamérica, España y EE. UU.). Al tocar uno se cargan sus canales, con sus nacionales primero. Se editan en `CONFIG.paises`. |
 | Buscador | Busca en todos los canales, sin importar tildes. |
-| Reproductor | Canal anterior/siguiente, favoritos, pantalla completa, AirPlay e imagen en imagen. |
-| Tarjetas | Bandera del país, categoría y avisos «Solo en su país» o «No 24/7». |
+| Reproductor | Canal anterior/siguiente, favoritos, pantalla completa, AirPlay e imagen en imagen. Debajo, lo que dan **ahora** (con barra de avance) y **después**. |
+| Señal de respaldo | Si un canal viene más de una vez en la lista, se muestra una sola tarjeta y las otras señales quedan de respaldo: si una falla o no arranca en 15 segundos, pasa sola a la siguiente. El botón «⇄ 1/2» junto a «En vivo» cambia de señal a mano. |
+| Guía | Al tocar «Guía ›» se abre la programación del canal. «Ahora» y «Después» son gratis; la guía completa de hoy y mañana es de Plus (`CONFIG.guia.soloPlus`). |
+| Tarjetas | Bandera del país y el programa que están dando (si hay guía); si no, la categoría y avisos «Solo en su país» o «No 24/7». |
 | Mis listas | Quien tenga su propia lista M3U puede sumarla (link, archivo o texto). |
 | Sin conexión | Si no carga la región, muestra videos de prueba y un aviso. |
 | Filtros | Se ocultan solos los canales para adultos y las copias no oficiales de canales de pago (ver «Lo legal»). |
@@ -33,6 +35,26 @@ Los canales salen de [iptv-org](https://github.com/iptv-org/iptv), un índice p�
 señales que sus propios dueños publican gratis en internet. Muchas se caen o cambian:
 la lista se descarga de nuevo cada vez que se abre la tele, y si un canal falla, el
 botón «Siguiente canal» salta al próximo.
+
+## Señales de respaldo
+
+Las listas suelen traer el mismo canal varias veces (por ejemplo en 720p y 480p, o desde otro
+servidor). Se juntan en una tarjeta cuando tienen el mismo `tvg-id`, o el mismo nombre y país.
+Al reproducir se prueban en orden: primero las que no han fallado y las https. Un canal solo
+pasa a «Canales inactivos» cuando **todas** sus señales fallan. El tiempo de espera antes de
+cambiar de señal es `STALL_MS` en `index.html`.
+
+## Guía de programación
+
+`api/guia.js` (función de Vercel) junta dos guías públicas y gratuitas en formato XMLTV,
+[IPTV-EPG.org](https://iptv-epg.org) y [EPGShare01](https://epgshare01.online), y devuelve
+solo los canales que también están en la lista del país, desde 2 horas atrás hasta 36 horas
+adelante. Los canales se reconocen por su `tvg-id` o por su nombre. Vercel guarda la respuesta
+3 horas, así que las guías se descargan pocas veces al día. La web pide la guía del país que
+estás viendo (en «En español», la de Chile) y la del país de cada canal que reproduces.
+
+No todos los canales tienen guía: aparece solo en los que alguna de las dos fuentes cubre.
+Los horarios se muestran en la hora del teléfono.
 
 ## Canales inactivos (automático)
 
@@ -65,8 +87,9 @@ Beneficios incluidos hoy:
   Es el gancho principal para deportes y noticias.
 - **Sin anuncios**: se ocultan los banners.
 - **Temas de color**: claro, oscuro o automático.
+- **Guía completa**: toda la programación de hoy y mañana (ahora y después se ve gratis).
 
-Anunciado como «Pronto»: guía de programación. Agrega o quita beneficios en `CONFIG.plus.beneficios`.
+Agrega o quita beneficios en `CONFIG.plus.beneficios`.
 
 **Cómo funciona el cobro (sin servidor):**
 1. La persona toca «Suscribirme». Si pusiste tu link de Mercado Pago en `pago`, paga ahí;
