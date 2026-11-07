@@ -800,7 +800,8 @@ const CONFIG = {
   function programmes(c) {
     const g = c && guides[c.cc || region().cc];
     if (!g) return null;
-    return (c.id && g[c.id]) || g["n:" + gnorm(c.name)] || null;
+    const n = gnorm(c.name);
+    return (c.id && g[c.id]) || (n && g["n:" + n]) || null;
   }
   function onAir(c) {
     const p = programmes(c), t = nowMin();
@@ -853,6 +854,7 @@ const CONFIG = {
       const c = byUrl(b.dataset.url), m = b.querySelector(".cmeta");
       if (c && m) m.textContent = cardMeta(c);
     });
+    document.querySelectorAll(".card.web[data-web]").forEach((a) => { a.querySelector(".cmeta").textContent = webMeta(a.dataset.web, a.dataset.cc); });
   }
   setInterval(() => { if (!document.hidden) { paintProg(); refreshMeta(); } }, 60000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) { paintProg(); refreshMeta(); } });
@@ -921,11 +923,16 @@ const CONFIG = {
     }
     return items;
   }
+  function webMeta(nombre, cc) {
+    const on = onAir({ cc, name: nombre });
+    return flag(cc) + (on ? " " + on[2] : " · En su sitio oficial");
+  }
   function webCard(d, cc) {
     const a = el("a", "card web"); a.href = d.web; a.target = "_blank"; a.rel = "noopener";
     const lg = el("div", "logo", d.sigla || initials(d.nombre));
     lg.style.setProperty("--h", [...d.nombre].reduce((x, ch) => (x * 31 + ch.charCodeAt(0)) % 360, 7));
-    a.append(lg, el("span", "cname", d.nombre), el("span", "cmeta", flag(cc) + " · En su sitio oficial"));
+    a.dataset.web = d.nombre; a.dataset.cc = cc;
+    a.append(lg, el("span", "cname", d.nombre), el("span", "cmeta", webMeta(d.nombre, cc)));
     a.setAttribute("aria-label", d.nombre + ", ver en vivo en su sitio oficial (se abre en otra pestaña)");
     return a;
   }
