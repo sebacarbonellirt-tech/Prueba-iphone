@@ -235,8 +235,9 @@ dialog::backdrop { background: rgba(8,7,12,.55); backdrop-filter: blur(3px); -we
    ============================================================ */
 const CONFIG = {
   marca: "Antena",
-  whatsapp: "56900000000",        // 56 + 9 + tus 8 dígitos (para ventas de Plus y contacto)
-  email: "hola@tumarca.cl",       // donde los dueños de una señal te piden retirarla
+  whatsapp: "",                   // 56 + 9 + tus 8 dígitos, ej. "56912345678". Vacío = se ocultan los botones de WhatsApp
+  email: "",                      // donde los dueños de una señal te piden retirarla (vacío = se usa «contacto»)
+  contacto: "https://github.com/sebacarbonellirt-tech/Prueba-iphone/issues/new?title=Retirar%20se%C3%B1al%20de%20Antena", // si no hay email
 
   // De dónde salen los canales: índice comunitario iptv-org de señales que sus dueños
   // publican gratis en internet. El público elige la región en el botón de arriba.
@@ -370,8 +371,8 @@ const CONFIG = {
 
 <footer class="wrap">
   <p><b class="js-brand">Antena</b> muestra señales que sus propios dueños transmiten gratis por internet, a partir del índice público <a href="https://github.com/iptv-org/iptv" target="_blank" rel="noopener">iptv-org</a>. No alojamos ni vendemos canales: Plus paga funciones de la app, no contenido.</p>
-  <p>¿Eres dueño de una señal y quieres que la retiremos? Escríbenos a <a id="takedown" href="#"></a> y la sacamos en 48 horas.</p>
-  <p>¿Tienes un canal o una radio y quieres aparecer? <a id="addChannel" href="#" target="_blank" rel="noopener">Súmalo gratis</a>.</p>
+  <p>¿Eres dueño de una señal y quieres que la retiremos? <a id="takedown" href="#" target="_blank" rel="noopener">Escríbenos</a> y la sacamos en 48 horas.</p>
+  <p id="addChannelRow">¿Tienes un canal o una radio y quieres aparecer? <a id="addChannel" href="#" target="_blank" rel="noopener">Súmalo gratis</a>.</p>
   <p><button class="btn sm ghost" id="listsBtn">Mis listas M3U</button></p>
 </footer>
 
@@ -434,7 +435,7 @@ const CONFIG = {
         <button class="btn plus" type="submit">Activar</button>
       </form>
       <p class="msg" id="codeMsg" hidden></p>
-      <p class="note">Después de pagar te enviamos el código por WhatsApp o email. Se activa en este dispositivo.</p>
+      <p class="note" id="codeHelp">Después de pagar te enviamos el código por WhatsApp o email. Se activa en este dispositivo.</p>
     </div>
   </div>
 </dialog>
@@ -977,8 +978,10 @@ const CONFIG = {
       const c = el("div", "plan" + (p.destacado ? " featured" : ""));
       const t = el("div", "pt", p.titulo); if (p.etiqueta) t.append(el("span", "badge", p.etiqueta));
       const pp = el("div", "pp"); pp.append(el("b", "", clp(p.precio)), el("span", "", " " + p.periodo));
-      const a = el("a", "btn block " + (p.destacado ? "plus" : "ghost"), "Suscribirme");
-      a.href = p.pago || wa("Hola, quiero " + P.nombre + " " + p.titulo.toLowerCase() + " (" + clp(p.precio) + " " + p.periodo + ").");
+      const canBuy = !!(p.pago || CONFIG.whatsapp);
+      const a = el("a", "btn block " + (p.destacado ? "plus" : "ghost"), canBuy ? "Suscribirme" : "Muy pronto");
+      if (!canBuy) { a.setAttribute("aria-disabled", "true"); a.style.opacity = ".55"; a.style.pointerEvents = "none"; }
+      else a.href = p.pago || wa("Hola, quiero " + P.nombre + " " + p.titulo.toLowerCase() + " (" + clp(p.precio) + " " + p.periodo + ").");
       a.target = "_blank"; a.rel = "noopener";
       a.addEventListener("click", () => { try { window.plausible && plausible("click_plus", { props: { plan: p.id } }); window.gtag && gtag("event", "click_plus", { plan: p.id }); } catch {} });
       c.append(t, pp, el("p", "ps", p.detalle), a);
@@ -1003,7 +1006,7 @@ const CONFIG = {
     if (code.length < 6) { m.textContent = "Escribe el código tal como te llegó."; m.className = "msg err"; m.hidden = false; return; }
     let ok = false;
     try { ok = CONFIG.plus.codigos.includes(await sha256(code)); } catch {}
-    if (!ok) { m.textContent = "Ese código no es válido. Revisa que esté bien escrito o escríbenos por WhatsApp."; m.className = "msg err"; m.hidden = false; return; }
+    if (!ok) { m.textContent = "Ese código no es válido. Revisa que esté bien escrito."; m.className = "msg err"; m.hidden = false; return; }
     state.plus = { since: Date.now(), tail: code.slice(-4) }; save();
     paintPlus(); render(); $("#plusSheet").close();
     toast("¡Plus activado! Ya puedes usar la multipantalla.");
@@ -1031,7 +1034,10 @@ const CONFIG = {
 
   /* ---------- Inicio ---------- */
   document.querySelectorAll(".js-brand").forEach((e) => (e.textContent = CONFIG.marca));
-  $("#takedown").textContent = CONFIG.email; $("#takedown").href = "mailto:" + CONFIG.email + "?subject=" + encodeURIComponent("Retirar señal de " + CONFIG.marca);
+  if (CONFIG.email) { $("#takedown").textContent = CONFIG.email; $("#takedown").href = "mailto:" + CONFIG.email + "?subject=" + encodeURIComponent("Retirar señal de " + CONFIG.marca); }
+  else $("#takedown").href = CONFIG.contacto;
+  $("#addChannelRow").hidden = !CONFIG.whatsapp;
+  if (!CONFIG.whatsapp && !CONFIG.plus.planes.some((p) => p.pago)) $("#codeHelp").textContent = "Las suscripciones abren muy pronto. Si ya tienes un código, actívalo aquí.";
   $("#addChannel").href = wa("Hola, tengo un canal/radio y quiero que aparezca gratis en " + CONFIG.marca + ". Mi señal es: ");
   paintPlus(); applyTheme();
   loadRegion();
