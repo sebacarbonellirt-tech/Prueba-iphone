@@ -160,6 +160,11 @@ p { margin: 0; }
 .card .playing { position: absolute; left: 6px; top: 6px; padding: 3px 6px; border-radius: 6px; background: var(--live); color: #fff; font: 600 .6rem/1 var(--f-mono); letter-spacing: .08em; }
 .card .cname { font-weight: 600; font-size: .9rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .card .cmeta { font-size: .75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card.web { text-decoration: none; color: inherit; }
+.card.web .logo::after { content: "↗"; position: absolute; right: 8px; bottom: 6px; font: 700 .85rem/1 var(--f-body); color: var(--muted); }
+.card.country .logo { font: 400 2.6rem/1 system-ui, sans-serif; }
+.card.country[aria-current="true"] .logo { box-shadow: 0 0 0 2.5px var(--accent); }
+.shelf.nat { padding-top: 18px; }
 .count { font-size: .8rem; color: var(--muted); padding-block: 6px 10px; font-family: var(--f-mono); }
 .more { margin-top: 16px; }
 .empty { padding: 30px 10px; text-align: center; color: var(--muted); display: grid; gap: 12px; justify-items: center; }
@@ -243,18 +248,73 @@ const CONFIG = {
   contacto: "https://github.com/sebacarbonellirt-tech/Prueba-iphone/issues/new?title=Retirar%20se%C3%B1al%20de%20Antena", // si no hay email
 
   // De dónde salen los canales: índice comunitario iptv-org de señales que sus dueños
-  // publican gratis en internet. El público elige la región en el botón de arriba.
+  // publican gratis en internet. El público elige en el botón de arriba o en la fila «Países».
   regiones: [
     { id: "spa", nombre: "En español", url: "https://iptv-org.github.io/iptv/languages/spa.m3u" },
-    { id: "cl", nombre: "Chile", url: "https://iptv-org.github.io/iptv/countries/cl.m3u" },
-    { id: "ar", nombre: "Argentina", url: "https://iptv-org.github.io/iptv/countries/ar.m3u" },
-    { id: "mx", nombre: "México", url: "https://iptv-org.github.io/iptv/countries/mx.m3u" },
-    { id: "co", nombre: "Colombia", url: "https://iptv-org.github.io/iptv/countries/co.m3u" },
-    { id: "pe", nombre: "Perú", url: "https://iptv-org.github.io/iptv/countries/pe.m3u" },
-    { id: "es", nombre: "España", url: "https://iptv-org.github.io/iptv/countries/es.m3u" },
-    { id: "us", nombre: "Estados Unidos", url: "https://iptv-org.github.io/iptv/countries/us.m3u" },
+  ],
+  // Cada país usa su lista de iptv-org (countries/<código>.m3u). El orden es el de la fila «Países».
+  paises: [
+    { cc: "cl", nombre: "Chile" }, { cc: "ar", nombre: "Argentina" }, { cc: "mx", nombre: "México" },
+    { cc: "co", nombre: "Colombia" }, { cc: "pe", nombre: "Perú" }, { cc: "ve", nombre: "Venezuela" },
+    { cc: "ec", nombre: "Ecuador" }, { cc: "bo", nombre: "Bolivia" }, { cc: "uy", nombre: "Uruguay" },
+    { cc: "py", nombre: "Paraguay" }, { cc: "cr", nombre: "Costa Rica" }, { cc: "pa", nombre: "Panamá" },
+    { cc: "gt", nombre: "Guatemala" }, { cc: "hn", nombre: "Honduras" }, { cc: "sv", nombre: "El Salvador" },
+    { cc: "ni", nombre: "Nicaragua" }, { cc: "do", nombre: "Rep. Dominicana" }, { cc: "pr", nombre: "Puerto Rico" },
+    { cc: "cu", nombre: "Cuba" }, { cc: "es", nombre: "España" }, { cc: "us", nombre: "Estados Unidos" },
   ],
   regionInicial: "spa",
+  paisPrincipal: "cl",   // de qué país son los «Nacionales» cuando se mira «En español»
+
+  // Canales nacionales de señal abierta: van primero en la portada de cada país.
+  // «buscar» = nombres con que aparecen en la lista (solo se usan sus señales oficiales).
+  // «web» = su transmisión en vivo en el sitio oficial, para cuando la lista no trae una señal oficial.
+  // «sigla» = lo que se lee en la tarjeta del sitio oficial.
+  nacionales: {
+    cl: [
+      { nombre: "TVN", sigla: "TVN", buscar: ["tvn"], web: "https://www.tvn.cl/en-vivo" },
+      { nombre: "Canal 13", sigla: "13", buscar: ["canal 13"], web: "https://www.13.cl/en-vivo" },
+      { nombre: "Mega", sigla: "MEGA", buscar: ["mega"], web: "https://www.mega.cl/senal-en-vivo/" },
+      { nombre: "Chilevisión", sigla: "CHV", buscar: ["chilevision", "chv"], web: "https://www.chilevision.cl/senal-online" },
+      { nombre: "La Red", sigla: "RED", buscar: ["la red"], web: "https://www.lared.cl/senal-online" },
+      { nombre: "TV+", sigla: "TV+", buscar: ["tv+", "tv mas"], web: "https://www.tvmas.tv/" },
+      { nombre: "24 Horas", sigla: "24H", buscar: ["24 horas"], web: "https://www.24horas.cl/envivo" },
+      { nombre: "T13 En Vivo", buscar: ["t13"] },
+      { nombre: "13C", buscar: ["13c"] },
+      { nombre: "UCV TV", buscar: ["ucv"] },
+    ],
+    ar: [
+      { nombre: "Telefe", buscar: ["telefe"] }, { nombre: "El Trece", buscar: ["el trece", "eltrece"] },
+      { nombre: "América TV", buscar: ["america tv"] }, { nombre: "TV Pública", buscar: ["tv publica"] },
+      { nombre: "Canal 9", buscar: ["canal 9"] }, { nombre: "Canal 26", buscar: ["canal 26"] },
+      { nombre: "Encuentro", buscar: ["encuentro"] }, { nombre: "Pakapaka", buscar: ["pakapaka"] },
+    ],
+    mx: [
+      { nombre: "Las Estrellas", buscar: ["las estrellas"] }, { nombre: "Azteca Uno", buscar: ["azteca uno"] },
+      { nombre: "Azteca 7", buscar: ["azteca 7"] }, { nombre: "Imagen TV", buscar: ["imagen tv"] },
+      { nombre: "Canal Once", buscar: ["canal once"] }, { nombre: "Canal 22", buscar: ["canal 22"] },
+      { nombre: "Multimedios", buscar: ["multimedios"] }, { nombre: "ADN 40", buscar: ["adn 40", "adn40"] },
+      { nombre: "Milenio", buscar: ["milenio"] }, { nombre: "Capital 21", buscar: ["capital 21"] },
+    ],
+    co: [
+      { nombre: "Caracol", buscar: ["caracol"] }, { nombre: "RCN", buscar: ["rcn"] }, { nombre: "Canal 1", buscar: ["canal 1"] },
+      { nombre: "Señal Colombia", buscar: ["senal colombia"] }, { nombre: "NTN24", buscar: ["ntn24"] },
+      { nombre: "Canal Capital", buscar: ["canal capital"] }, { nombre: "Telecaribe", buscar: ["telecaribe"] },
+      { nombre: "Teleantioquia", buscar: ["teleantioquia"] }, { nombre: "Telepacífico", buscar: ["telepacifico"] },
+    ],
+    pe: [
+      { nombre: "América TV", buscar: ["america tv"] }, { nombre: "Latina", buscar: ["latina"] },
+      { nombre: "Panamericana", buscar: ["panamericana"] }, { nombre: "ATV", buscar: ["atv"] },
+      { nombre: "TV Perú", buscar: ["tv peru"] }, { nombre: "Willax", buscar: ["willax"] },
+      { nombre: "Exitosa", buscar: ["exitosa"] }, { nombre: "Canal N", buscar: ["canal n"] },
+    ],
+    es: [
+      { nombre: "La 1", buscar: ["la 1"] }, { nombre: "La 2", buscar: ["la 2"] }, { nombre: "24h", buscar: ["24h"] },
+      { nombre: "Antena 3", buscar: ["antena 3"] }, { nombre: "Cuatro", buscar: ["cuatro"] },
+      { nombre: "Telecinco", buscar: ["telecinco"] }, { nombre: "laSexta", buscar: ["lasexta", "la sexta"] },
+      { nombre: "Clan", buscar: ["clan"] }, { nombre: "Teledeporte", buscar: ["teledeporte"] },
+      { nombre: "Telemadrid", buscar: ["telemadrid"] }, { nombre: "TV3", buscar: ["tv3"] }, { nombre: "Canal Sur", buscar: ["canal sur"] },
+    ],
+  },
 
   // Orden de las filas en la portada (las demás categorías van después, en orden alfabético).
   categorias: ["Noticias", "Deportes", "Música", "Infantil", "Películas", "Series", "Entretención", "Cultura", "Documentales", "Religión"],
@@ -581,7 +641,14 @@ const CONFIG = {
     const m = Math.max(1, Math.round((Date.now() - t) / 60000));
     return m < 60 ? "hace " + m + " min" : "hace " + Math.round(m / 60) + " h";
   }
-  const region = () => CONFIG.regiones.find((r) => r.id === state.region) || CONFIG.regiones[0];
+  const IPTV = "https://iptv-org.github.io/iptv/countries/";
+  const allRegions = () => [...CONFIG.regiones, ...CONFIG.paises.map((p) => ({ id: p.cc, cc: p.cc, nombre: p.nombre, url: p.lista || IPTV + p.cc + ".m3u" }))];
+  const region = () => allRegions().find((r) => r.id === state.region) || allRegions()[0];
+  function selectRegion(id) {
+    if (state.region === id && regionText) return scrollTo({ top: 0, behavior: "smooth" });
+    state.region = id; save(); filter = "all"; query = ""; $("#q").value = "";
+    loadRegion(); scrollTo({ top: 0, behavior: "smooth" });
+  }
   let regionText = "";
   function rebuild() {
     const seen = new Set();
@@ -628,6 +695,7 @@ const CONFIG = {
 
   function initials(name) {
     const w = name.replace(/[^\p{L}\p{N} ]/gu, "").trim().split(/\s+/);
+    if (/\d/.test(w[0] || "") && w[0].length <= 4) return w[0].toUpperCase(); // «T13», «13C», «24H»
     return ((w[0] || "?")[0] + (w[1] ? w[1][0] : (w[0] || "")[1] || "")).toUpperCase();
   }
   function logoEl(c) {
@@ -652,6 +720,60 @@ const CONFIG = {
     b.setAttribute("aria-label", c.name + ", " + (down ? "sin señal" : c.group));
     b.onclick = () => pick(c, list);
     return b;
+  }
+  /* ---------- Nacionales y países ---------- */
+  const natCountry = () => region().cc || CONFIG.paisPrincipal;
+  const countryName = (cc) => (CONFIG.paises.find((p) => p.cc === cc) || {}).nombre || cc.toUpperCase();
+  // Para cada canal nacional: sus señales oficiales en la lista; si no hay ninguna que funcione, el link a su sitio.
+  function nationals() {
+    const cc = natCountry(), used = new Set(), items = [];
+    for (const d of CONFIG.nacionales[cc] || []) {
+      const re = new RegExp("(^|[^a-z0-9])(" + d.buscar.map((t) => esc(norm(t))).join("|") + ")(?![a-z0-9])", "i");
+      const found = channels.filter((c) => !used.has(c.url) && (!c.cc || c.cc === cc) && re.test(norm(c.name)));
+      const live = found.filter((c) => !isDown(c));
+      const pick = live.length ? live.slice(0, 2) : d.web ? [] : found.slice(0, 1);
+      pick.forEach((c) => { used.add(c.url); items.push({ c }); });
+      if (!pick.length && d.web) items.push({ web: d, cc });
+    }
+    return items;
+  }
+  function webCard(d, cc) {
+    const a = el("a", "card web"); a.href = d.web; a.target = "_blank"; a.rel = "noopener";
+    const lg = el("div", "logo", d.sigla || initials(d.nombre));
+    lg.style.setProperty("--h", [...d.nombre].reduce((x, ch) => (x * 31 + ch.charCodeAt(0)) % 360, 7));
+    a.append(lg, el("span", "cname", d.nombre), el("span", "cmeta", flag(cc) + " · En su sitio oficial"));
+    a.setAttribute("aria-label", d.nombre + ", ver en vivo en su sitio oficial (se abre en otra pestaña)");
+    return a;
+  }
+  function nationalShelf() {
+    const items = nationals();
+    if (!items.length) return null;
+    const cc = natCountry();
+    const s = el("section", "shelf nat");
+    const h = el("div", "shelf-head"); h.append(el("h2", "", "Nacionales de " + countryName(cc) + " " + flag(cc)));
+    const rail = el("div", "rail"); rail.setAttribute("role", "list");
+    const playable = items.filter((x) => x.c).map((x) => x.c);
+    items.forEach((x) => rail.append(x.c ? card(x.c, playable) : webCard(x.web, x.cc)));
+    s.append(h, rail);
+    return s;
+  }
+  function countryShelf() {
+    const s = el("section", "shelf");
+    const h = el("div", "shelf-head"); h.append(el("h2", "", "Países"));
+    const counts = {};
+    for (const c of channels) if (c.cc) counts[c.cc] = (counts[c.cc] || 0) + 1;
+    const rail = el("div", "rail"); rail.setAttribute("role", "list");
+    const tiles = [{ id: "spa", label: "En español", icon: "🌎" }, ...CONFIG.paises.map((p) => ({ id: p.cc, label: p.nombre, icon: flag(p.cc), n: counts[p.cc] }))];
+    for (const t of tiles) {
+      const b = el("button", "card country"); b.type = "button";
+      if (t.id === state.region) b.setAttribute("aria-current", "true");
+      b.append(el("div", "logo", t.icon), el("span", "cname", t.label), el("span", "cmeta", t.id === state.region ? "Viendo ahora" : region().id === "spa" && t.n ? t.n + " en español" : "Ver canales"));
+      b.setAttribute("aria-label", "Canales de " + t.label);
+      b.onclick = () => selectRegion(t.id);
+      rail.append(b);
+    }
+    s.append(h, rail);
+    return s;
   }
   function shelf(title, list, key) {
     const s = el("section", "shelf");
@@ -734,10 +856,12 @@ const CONFIG = {
     if (filter === "all" && !query) {
       const parts = [];
       if (loadFailed && !regionText) parts.push(Object.assign(el("p", "msg err", "No pudimos cargar los canales de «" + region().nombre + "». Mientras tanto, te dejamos videos de prueba."), { style: "margin-top:14px" }));
+      const nat = nationalShelf(); if (nat) parts.push(nat);
       const rec = state.recent.map(byUrl).filter(Boolean);
       if (rec.length) parts.push(shelf("Seguir viendo", rec, "recent"));
       const favs = state.favs.map(byUrl).filter(Boolean);
       if (favs.length) parts.push(shelf("Tus favoritos", favs, "fav"));
+      if (channels.length) parts.push(countryShelf());
       const act = activeList();
       catList().forEach(([g], i) => {
         parts.push(shelf(g, act.filter((c) => c.cats.includes(g)), g));
@@ -986,10 +1110,10 @@ const CONFIG = {
   $("#regionBtn").onclick = openSheet;
   $("#listsBtn").onclick = openSheet;
   function renderRegions() {
-    $("#regions").replaceChildren(...CONFIG.regiones.map((r) => {
-      const b = el("button", "chip", r.nombre); b.type = "button";
+    $("#regions").replaceChildren(...allRegions().map((r) => {
+      const b = el("button", "chip", (r.cc ? flag(r.cc) + " " : "") + r.nombre); b.type = "button";
       b.setAttribute("aria-pressed", String(r.id === state.region));
-      b.onclick = () => { state.region = r.id; save(); filter = "all"; renderRegions(); loadRegion(); $("#sheet").close(); };
+      b.onclick = () => { $("#sheet").close(); selectRegion(r.id); };
       return b;
     }));
   }
