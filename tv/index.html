@@ -230,8 +230,8 @@ dialog::backdrop { background: rgba(8,7,12,.55); backdrop-filter: blur(3px); -we
 <body>
 <script>
 /* ============================================================
-   ✏️  EDITA SOLO ESTE BLOQUE PARA PERSONALIZAR ANTENA
-   Desde el iPhone: github.com → tv/index.html → lápiz ✏️ → Commit.
+   ✏  EDITA SOLO ESTE BLOQUE PARA PERSONALIZAR ANTENA
+   Desde el iPhone: github.com → tv/index.html → lápiz ✏ → Commit.
    ============================================================ */
 const CONFIG = {
   marca: "Antena",
@@ -459,7 +459,7 @@ const CONFIG = {
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   const clp = (n) => new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP", maximumFractionDigits: 0 }).format(n);
   const wa = (t) => "https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(t);
-  const norm = (s) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const norm = (s) => (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
   /* ---------- Estado (solo en este dispositivo) ---------- */
   const blank = { region: CONFIG.regionInicial, lists: [], favs: [], recent: [], plus: null, theme: "auto" };
