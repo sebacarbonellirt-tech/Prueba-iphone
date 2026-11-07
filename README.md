@@ -6,6 +6,9 @@ sin pagar suscripciones ni comisiones de plataforma de tienda.
 
 > **Otra tienda en este repositorio:** [`empleo/`](empleo/) es **LaPega**, cursos para
 > conseguir trabajo en Chile, con calculadora de sueldo líquido gratis. Ver `empleo/README.md`.
+>
+> **Reproductor IPTV:** [`tv/`](tv/) es **Antena**, una app para ver canales en vivo desde
+> listas M3U en el iPhone (favoritos, búsqueda, AirPlay). Ver `tv/README.md`.
 
 ## Qué incluye
 
