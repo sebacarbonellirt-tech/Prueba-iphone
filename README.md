@@ -89,6 +89,7 @@ conectar un dominio propio (`tumarca.cl`, se compra en nic.cl).
 ```
 index.html            la tienda (edita el bloque CONFIG)
 empleo/               LaPega: tienda de cursos de empleo en Chile
+tv/                   Antena: reproductor IPTV (listas M3U)
 manifest.json         datos de la app instalable
 sw.js                 caché para abrir rápido y sin conexión
 icons/                iconos de la app (SVG y PNG)
