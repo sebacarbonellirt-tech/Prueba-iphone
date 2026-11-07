@@ -1,72 +1,106 @@
-# Antena: reproductor IPTV para iPhone
+# Antena: apps de TV y radio en vivo con marca propia
 
-App web instalable (PWA) para ver canales en vivo desde listas **M3U / M3U8**.
-Funciona en Safari del iPhone (que reproduce HLS de forma nativa) y en cualquier navegador
-de computador (usa hls.js, que se carga solo cuando hace falta).
+Un negocio que se maneja desde el iPhone: le haces a canales, radios, iglesias, colegios y
+clubes **su propia app** para ver su señal en vivo, con su nombre, logo y colores.
 
-## Qué hace
+```
+tv/
+  index.html     la web de venta (planes, demo en vivo, WhatsApp)  →  …/tv/
+  app/           el reproductor (gratis para uso personal, o con la marca de tu cliente)  →  …/tv/app/
+  icons/         iconos
+```
 
-| Función | Detalle |
+## 1. La web de venta (`tv/index.html`)
+
+Todo sale del bloque `CONFIG`, al principio del archivo:
+
+| Campo | Qué poner |
 | --- | --- |
-| Cargar listas | Por link, subiendo un archivo `.m3u` (desde Archivos / iCloud) o pegando el texto. También acepta el link directo de un solo canal `.m3u8`. |
-| Varias listas | Se juntan en un solo catálogo; los canales repetidos se muestran una vez. Puedes ocultar o borrar cada lista. |
-| Categorías | Usa `group-title` de la lista para crear filtros (Noticias, Deportes…). |
-| Búsqueda | Sin importar tildes ni mayúsculas («nunoa» encuentra «Ñuñoa»). |
-| Favoritos y Recientes | Toca la estrella. Se guardan en el iPhone. |
-| Reproductor | Canal anterior / siguiente, pantalla completa, AirPlay al televisor e imagen en imagen. Controles en la pantalla bloqueada. |
-| Logos | Usa `tvg-logo`; si no hay, muestra las iniciales del canal. |
-| Al día | Las listas agregadas por link se vuelven a descargar cada vez que abres la app. |
-| Privado | Todo queda en el dispositivo (localStorage). No hay servidor ni cuentas. |
+| `whatsapp` | Tu número: `569` + tus 8 dígitos. **Cámbialo primero**: todos los botones llevan ahí. |
+| `email` | Tu correo de contacto. |
+| `planes` | Precio, qué incluye y el link de cobro (`pago`). Si `pago` queda vacío, el botón abre WhatsApp con el pedido escrito. |
+| `propinas` | Aportes de quienes usan el reproductor gratis. `[]` para ocultarlas. |
+| `faq` | Preguntas frecuentes. |
 
-## Probarla
+Lo que más vende es la sección **«Mira cómo se vería tu app»**: el cliente escribe el nombre
+de su canal, elige un color, pega su link (opcional) y se le abre **su app funcionando**.
+El botón «Pedir esta app» te llega por WhatsApp con el nombre, el color y la señal ya escritos.
 
-1. Publica el repositorio (GitHub Pages o Vercel, igual que la tienda principal).
-2. Abre `https://TU-USUARIO.github.io/Prueba-iphone/tv/` en Safari.
-3. Toca **Probar la demostración**: carga videos de prueba públicos de Apple y Mux.
-4. Compartir → «Agregar a pantalla de inicio» para tenerla como app.
+Los links de cobro se crean desde el celular: **Mercado Pago** (link de pago) o **Flow**
+(Webpay). Para el plan mensual usa la suscripción de Mercado Pago.
 
-## Personalizar
+## 2. Entregarle la app a un cliente (10 minutos)
 
-Al principio de `index.html` está el bloque `CONFIG`:
+1. **Prueba su señal**: abre `…/tv/app/?marca=NOMBRE&color=%23COLOR&canal=LINK` en Safari.
+   Si se ve, ya está casi lista. Ese mismo link sirve para mostrársela antes de cobrar.
+2. **Copia la carpeta** `tv/app/` a un repositorio nuevo (o a una carpeta `clientes/nombre/`).
+3. En su `index.html`, llena el `CONFIG`:
+   ```js
+   fija: { nombre: "Radio Sur 98.5", canal: "https://…/live.m3u8", lista: "" },
+   color: "#0B7A55",
+   permitirListas: false,
+   ```
+   Si tiene varias señales (TV, radio, eventos), usa `lista` con un `.m3u` en lugar de `canal`.
+4. En su `manifest.json`, cambia `name`, `short_name` y `theme_color`. Reemplaza los iconos
+   de `icons/` por su logo (512×512, 192×192 y 180×180).
+5. **Publica** en Vercel (gratis) y, si quiere, conecta su dominio (`app.radiosur.cl`).
+6. Mándale el link y este texto para su público: *«Abre el link en Safari → Compartir →
+   Agregar a pantalla de inicio»*.
 
-- `marca`: el nombre que se muestra.
-- `ejemplos`: listas que aparecen para agregar con un toque. Cada una puede tener `url`
-  (link a un `.m3u`) o `texto` (la lista escrita ahí mismo).
-- `porPagina`: cuántos canales se dibujan antes del botón «Mostrar más».
+> El link con parámetros (`?marca=…`) es solo para demos: al instalarla desde la pantalla de
+> inicio el iPhone abre la versión sin parámetros. Para la app definitiva usa el paso 3.
 
-Colores en las variables `--accent`, `--bg`, etc., dentro de `<style>`.
+El pie de la app dice «Hecho con Antena · ¿Tienes un canal…? →» y lleva a tu web: cada app
+que entregas te trae clientes. Se quita con `hechoCon: ""` (puedes cobrar extra por quitarlo).
 
-## Formato de lista que entiende
+## 3. Si el cliente todavía no transmite (plan «Transmisión completa»)
 
-```
-#EXTM3U
-#EXTINF:-1 tvg-logo="https://…/logo.png" group-title="Noticias",Nombre del canal
-https://servidor.com/canal/index.m3u8
-```
+Necesita una señal **HLS en https** (`.m3u8`). El camino más simple:
 
-## Limitaciones del navegador (importante)
+1. **OBS Studio** (gratis) en el computador del cliente, con su cámara o su consola de audio.
+2. Un servicio de video en vivo que entregue HLS: **Cloudflare Stream**, **Mux** o
+   **Restream**. OBS envía por RTMP y el servicio te da el link `.m3u8`.
+3. Ese link va en `fija.canal`.
 
-- **http:// vs https://**: una página publicada en https no puede reproducir señales `http://`.
-  Pide a tu proveedor los links en `https://`.
-- **CORS**: algunos servidores no dejan que un navegador lea su lista. Si el link no carga,
-  descarga el `.m3u` y súbelo como archivo, o pega su contenido.
-- **RTMP / RTSP** no se pueden reproducir en un navegador.
-- En iPhone el audio se corta al salir de la app (salvo en imagen en imagen o AirPlay).
+Antes de cotizar, calcula el costo del servicio: se cobra por **minutos vistos**
+(personas × minutos). Una transmisión de 2 horas con 100 personas = 12.000 minutos.
+Revisa la tarifa vigente del proveedor y súmala a tu precio mensual, o haz que el cliente
+abra la cuenta a su nombre y pague él directo.
 
-## Lo legal
+## 4. Cómo conseguir los primeros clientes
 
-Antena es **solo un reproductor**, como VLC: no trae ni vende canales. Úsala con listas que
-tengas derecho a ver: tus propias transmisiones, señales que los canales publican gratis
-por internet, o un proveedor que tenga los derechos.
+1. **Busca quién ya transmite**: radios comunales, iglesias y clubes que hacen «en vivo» en
+   Facebook o YouTube. Están en Google Maps y en los grupos de tu ciudad.
+2. **Llega con la demo hecha**: arma el link `?marca=…&color=…` con su nombre y su color y
+   mándaselo por WhatsApp: *«Te armé esto, ¿te gustaría que tu público te tuviera así?»*.
+3. **El plan mensual es tu negocio**: 10 clientes × $14.990 = **$149.900 al mes** recurrentes.
+   El pago único sirve para que prueben sin miedo; después ofréceles soporte mensual.
+4. **Vende el día del evento**: aniversarios, finales del campeonato, Fiestas Patrias,
+   Semana Santa. Ahí es cuando más gente quiere ver en vivo.
+5. **Pide el logo de los auspiciadores**: los clubes y radios pueden venderle espacio en
+   su app a negocios locales; eso hace que tu plan se pague solo.
 
-**No la uses para revender listas de canales de pago** (TV cable, fútbol, plataformas de
-streaming) sin licencia: en Chile eso infringe la Ley 17.336 de Propiedad Intelectual y la
-Ley 20.750, y en la práctica esas listas se caen, los pagos se bloquean y las cuentas en
-redes se cierran por denuncias de los dueños de los derechos.
+Impuestos: haz inicio de actividades en sii.cl y emite boleta de honorarios o boleta
+electrónica (lo mismo que en la tienda Vitrina).
 
-Si quieres ganar dinero con esto de forma legal:
-- Vende la app como **reproductor** (personalizada con tu marca) a canales locales,
-  radios con video, iglesias, colegios o municipios que transmiten en vivo.
-- Arma tu **propio canal** (por ejemplo con OBS + un servidor HLS como Cloudflare Stream,
-  Mux o un VPS con nginx-rtmp) y usa Antena como su app.
-- Ofrece el servicio de **montarle la transmisión** a negocios y eventos.
+## 5. El reproductor gratis (`tv/app/`)
+
+Cualquiera puede usarlo para sus propias listas M3U: por link, archivo o texto pegado;
+categorías, búsqueda sin tildes, favoritos, recientes, canal anterior/siguiente, AirPlay,
+imagen en imagen y controles en la pantalla bloqueada. Todo queda en el dispositivo.
+Usa HLS nativo en Safari y carga hls.js solo en navegadores que lo necesitan.
+
+Limitaciones del navegador:
+- Una página https no puede reproducir señales `http://`.
+- Algunos servidores no dejan leer su lista desde el navegador (CORS): súbela como archivo.
+- RTMP y RTSP no se reproducen en el navegador.
+
+## Lo legal (léelo antes de vender)
+
+Antena hace apps para **señales propias o con derechos de transmisión**. No vendas listas ni
+suscripciones a canales de cable, fútbol o plataformas de streaming sin licencia: en Chile
+infringe la Ley 17.336 de Propiedad Intelectual, y en la práctica esas listas se caen, los
+pagos se bloquean y las cuentas en redes se cierran por denuncias.
+
+Antes de cada entrega, confirma por escrito (basta un WhatsApp) que la señal es del cliente.
+Si un club transmite un partido de una liga, que tenga permiso de la liga.
