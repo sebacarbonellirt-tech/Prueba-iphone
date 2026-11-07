@@ -7,8 +7,8 @@ sin pagar suscripciones ni comisiones de plataforma de tienda.
 > **Otra tienda en este repositorio:** [`empleo/`](empleo/) es **LaPega**, cursos para
 > conseguir trabajo en Chile, con calculadora de sueldo líquido gratis. Ver `empleo/README.md`.
 >
-> **Apps de TV y radio en vivo:** [`tv/`](tv/) es **Antena**, una web para vender apps con marca
-> propia a canales, radios, iglesias y clubes, más un reproductor IPTV gratis (`tv/app/`). Ver `tv/README.md`.
+> **Tele gratis en la web:** [`tv/`](tv/) es **Antena TV**, canales abiertos en vivo por categoría
+> (noticias, deportes, música, infantil), con suscripción opcional **Plus**. Ver `tv/README.md`.
 
 ## Qué incluye
 
@@ -92,7 +92,7 @@ conectar un dominio propio (`tumarca.cl`, se compra en nic.cl).
 ```
 index.html            la tienda (edita el bloque CONFIG)
 empleo/               LaPega: tienda de cursos de empleo en Chile
-tv/                   Antena: web de venta de apps en vivo + reproductor (tv/app/)
+tv/                   Antena TV: tele gratis en vivo + suscripción Plus
 manifest.json         datos de la app instalable
 sw.js                 caché para abrir rápido y sin conexión
 icons/                iconos de la app (SVG y PNG)

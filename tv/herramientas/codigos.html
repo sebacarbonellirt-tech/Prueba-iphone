@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Códigos Plus</title>
+<meta name="robots" content="noindex">
+<style>
+:root { --bg: #F3F1EC; --surface: #fff; --ink: #17151C; --muted: #5E5A66; --line: #DAD6CE; --accent: #6A3FD6; --accent-ink: #fff; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0E0D12; --surface: #18171F; --ink: #EEECF3; --muted: #A09CAB; --line: #2C2A36; --accent: #A98BFF; --accent-ink: #150B33; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0E0D12; --surface: #18171F; --ink: #EEECF3; --muted: #A09CAB; --line: #2C2A36; --accent: #A98BFF; --accent-ink: #150B33; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 -apple-system, system-ui, sans-serif; }
+main { max-width: 680px; margin: 0 auto; padding: 24px max(16px, env(safe-area-inset-left, 0px)) 40px; display: grid; gap: 16px; }
+h1 { margin: 0; font-size: 1.6rem; }
+p { margin: 0; color: var(--muted); }
+.box { background: var(--surface); border-radius: 16px; padding: 16px; display: grid; gap: 12px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+label { display: grid; gap: 6px; font-size: .85rem; font-weight: 600; color: var(--muted); }
+input { min-height: 46px; padding: 0 12px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; width: 110px; }
+button { min-height: 46px; padding: 0 16px; border-radius: 12px; border: 0; background: var(--accent); color: var(--accent-ink); font: 700 1rem inherit; cursor: pointer; }
+button.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+table { width: 100%; border-collapse: collapse; font: 500 .85rem ui-monospace, Menlo, monospace; }
+td { padding: 8px 4px; border-bottom: 1px dashed var(--line); overflow-wrap: anywhere; }
+td:first-child { white-space: nowrap; font-weight: 700; color: var(--ink); }
+td:last-child { color: var(--muted); font-size: .7rem; }
+textarea { width: 100%; min-height: 120px; padding: 10px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); font: .75rem ui-monospace, Menlo, monospace; }
+.ok { color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Códigos de Antena Plus</h1>
+  <p>Crea códigos para quienes te pagan. A cada cliente le envías <b>un código</b> (columna izquierda). La versión cifrada (derecha) va en <code>CONFIG.plus.codigos</code> de <code>tv/index.html</code>.</p>
+
+  <div class="box">
+    <div class="row">
+      <label>Cantidad<input id="n" type="number" min="1" max="200" value="10" inputmode="numeric"></label>
+      <button id="gen">Crear códigos</button>
+    </div>
+    <table id="out" aria-label="Códigos creados"></table>
+  </div>
+
+  <div class="box" id="paste" hidden>
+    <p><b>1.</b> Guarda la lista de códigos (cópiala a Notas). <b>2.</b> Copia este bloque y pégalo dentro de <code>codigos: [ … ]</code>, después del último código que ya tengas.</p>
+    <textarea id="hashes" readonly></textarea>
+    <div class="row">
+      <button id="copyHashes">Copiar para CONFIG</button>
+      <button class="ghost" id="copyCodes">Copiar los códigos</button>
+    </div>
+    <p id="copied" class="ok" hidden>Copiado.</p>
+  </div>
+
+  <div class="box">
+    <p><b>Revisar un código:</b> escríbelo y te muestro su versión cifrada para buscarla en CONFIG.</p>
+    <div class="row">
+      <label style="flex:1">Código<input id="check" style="width:100%" placeholder="ANT-XXXXX-XXXXX" autocapitalize="characters"></label>
+      <button class="ghost" id="checkBtn">Ver</button>
+    </div>
+    <p id="checkOut" style="font: .75rem ui-monospace, Menlo, monospace; overflow-wrap:anywhere"></p>
+  </div>
+
+  <p>Esta página no guarda nada ni envía datos: todo se calcula en tu teléfono.</p>
+</main>
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sin 0/O ni 1/I para que no se confundan
+  const part = () => [...crypto.getRandomValues(new Uint8Array(5))].map((b) => ABC[b % 32]).join("");
+  const norm = (c) => c.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  async function sha256(t) {
+    const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
+    return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
+  }
+  let codes = [];
+  $("#gen").onclick = async () => {
+    const n = Math.max(1, Math.min(200, parseInt($("#n").value, 10) || 10));
+    codes = [];
+    for (let i = 0; i < n; i++) { const c = "ANT-" + part() + "-" + part(); codes.push([c, await sha256(norm(c))]); }
+    $("#out").replaceChildren(...codes.map(([c, h]) => { const tr = document.createElement("tr"); tr.innerHTML = "<td></td><td></td>"; tr.cells[0].textContent = c; tr.cells[1].textContent = h; return tr; }));
+    $("#hashes").value = codes.map(([c, h]) => '      "' + h + '",').join("\n");
+    $("#paste").hidden = false;
+  };
+  const copy = async (t) => { try { await navigator.clipboard.writeText(t); $("#copied").hidden = false; setTimeout(() => ($("#copied").hidden = true), 1500); } catch { alert("Mantén presionado el texto para copiarlo."); } };
+  $("#copyHashes").onclick = () => copy($("#hashes").value);
+  $("#copyCodes").onclick = () => copy(codes.map(([c]) => c).join("\n"));
+  $("#checkBtn").onclick = async () => { const c = norm($("#check").value); $("#checkOut").textContent = c ? await sha256(c) : ""; };
+})();
+</script>
+</body>
+</html>
