@@ -25,6 +25,9 @@ function gnorm(s) {
     .replace(/\b(hd|sd|fhd|uhd|4k|tv|canal|television)\b/g, " ").replace(/[^a-z0-9]/g, "");
 }
 const baseId = (id) => String(id || "").split("@")[0];
+// Algunas guías rellenan las horas sin datos con títulos vacíos: se descartan,
+// y si un canal queda sin nada, otra guía puede aportar sus horarios.
+const RELLENO = /^(no data|no (programme|program|information)|sin (datos|informaci[oó]n|programaci[oó]n)|to be announced|tba|n\/a|-+)$/i;
 
 function texto(x) {
   return String(x || "").replace(/^<!\[CDATA\[([\s\S]*)\]\]>$/, "$1")
@@ -90,7 +93,7 @@ function leerGuia(xml, { ids, nombres }, canales, ahora) {
     const ini = minutos(attr.start), fin = minutos(attr.stop);
     if (!(fin > desde && ini < hasta && fin > ini)) continue;
     const titulo = texto((m[2].match(/<title[^>]*>([\s\S]*?)<\/title>/) || [])[1]);
-    if (!titulo) continue;
+    if (!titulo || RELLENO.test(titulo)) continue;
     (nuevos[k] = nuevos[k] || []).push([Math.round(ini), Math.round(fin), titulo.slice(0, 120)]);
   }
   let n = 0;
