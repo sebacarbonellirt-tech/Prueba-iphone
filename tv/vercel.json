@@ -1,6 +1,11 @@
 {
   "functions": {
     "api/estado.js": { "maxDuration": 60 },
-    "api/guia.js": { "maxDuration": 60 }
-  }
+    "api/guia.js": { "maxDuration": 60 },
+    "api/radios.js": { "maxDuration": 60 },
+    "api/canal.js": { "maxDuration": 20 }
+  },
+  "rewrites": [
+    { "source": "/c/:id", "destination": "/api/canal?id=:id" }
+  ]
 }

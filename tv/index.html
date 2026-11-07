@@ -14,6 +14,12 @@
 <meta property="og:title" content="Antena · Tele gratis en vivo">
 <meta property="og:description" content="Noticias, deportes, música e infantil. Canales abiertos, sin registrarte.">
 <meta property="og:type" content="website">
+<meta property="og:image" content="https://antena-tv.vercel.app/og.png">
+<meta property="og:url" content="https://antena-tv.vercel.app/">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Estadísticas de visitas (Vercel Web Analytics, gratis; sin cookies). Se activan en vercel.com → antena-tv → Analytics. -->
+<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+<script defer src="/_vercel/insights/script.js"></script>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -93,6 +99,10 @@ p { margin: 0; }
 .screen video { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; }
 .overlay { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 12px; padding: 16px; text-align: center; color: #F4F2F7; background: rgba(8,7,12,.82); font-size: .92rem; }
 .overlay p { max-width: 30em; }
+.radio-art { position: absolute; inset: 0 0 56px; display: grid; place-items: center; align-content: center; gap: 10px; pointer-events: none; color: #F4F2F7; text-align: center; background: radial-gradient(circle at 50% 40%, hsl(var(--h, 10) 45% 26%), #000 75%); }
+.radio-art .logo { width: min(42%, 220px); background: #fff1; }
+.radio-art b { font: 700 1.05rem/1.2 var(--f-display); }
+.radio-art span { font: 600 .7rem/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; opacity: .75; }
 .overlay .row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .spinner { width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(255,255,255,.22); border-top-color: #fff; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(1turn); } }
@@ -374,7 +384,10 @@ const CONFIG = {
     { nombre: "Entretención", icono: "🎭", color: 210 },
     { nombre: "Cultura", icono: "🌎", color: 175 },
     { nombre: "Religión", icono: "🙏", color: 255 },
+    { nombre: "Radios", icono: "📻", color: 190 },
   ],
+  // Radios en vivo (api/radios.js, del directorio público Radio Browser). pais: "" = sin radios.
+  radios: { pais: "cl" },
   porFila: 24,       // canales por fila en la portada
   porPagina: 120,    // canales por página al filtrar o buscar
 
@@ -443,6 +456,7 @@ const CONFIG = {
       <div id="single">
         <div class="screen">
           <video id="video" playsinline controls x-webkit-airplay="allow" preload="none"></video>
+          <div class="radio-art" id="radioArt" hidden aria-hidden="true"></div>
           <div class="overlay" id="loading" hidden><div class="spinner" aria-hidden="true"></div><p>Conectando…</p></div>
           <div class="overlay" id="failed" hidden role="alert">
             <p id="failedMsg">Este canal no está transmitiendo ahora.</p>
@@ -466,6 +480,7 @@ const CONFIG = {
         </div>
         <div class="controls">
           <button class="icon-btn" id="favBtn" aria-pressed="false" aria-label="Agregar a favoritos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg></button>
+          <button class="icon-btn" id="shareBtn" aria-label="Compartir este canal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7.5 7.5L12 3l4.5 4.5"/><path d="M5 12v6.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V12"/></svg></button>
           <button class="icon-btn hide-xs" id="prev" aria-label="Canal anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
           <button class="icon-btn" id="next" aria-label="Canal siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
           <button class="icon-btn" id="multiBtn" aria-label="Multipantalla (Plus)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="4" width="8" height="7" rx="1.5"/><rect x="3" y="13" width="8" height="7" rx="1.5"/><rect x="13" y="13" width="8" height="7" rx="1.5"/></svg></button>
@@ -670,7 +685,7 @@ const CONFIG = {
         if (!cats.length) cats.push(OTROS);
         const name = i.name || decodeURIComponent(line.split("/").pop().split("?")[0]) || "Canal";
         if (!hidden.has(norm(name)) && !hidden.has(norm(line)) && !(src === "region" && noOficial(name, line)))
-          out.push({ name, id: i.id, logo: i.logo, cats, group: cats[0], cc: i.cc, geo: i.geo, part: i.part, url: line, src });
+          out.push({ name, id: i.id, logo: i.logo, cats, group: cats[0], cc: i.cc, geo: i.geo, part: i.part, url: line, src, radio: src === "radio" });
         info = null; extGroup = "";
       }
     }
@@ -776,7 +791,7 @@ const CONFIG = {
   // de cada fila), después el resto de cada fila, y al final los inactivos, por si volvieron.
   function probeQueue() {
     const seen = new Set(), out = [];
-    const add = (c) => { if (c && c.src !== "demo" && !seen.has(c)) { seen.add(c); out.push(c); } };
+    const add = (c) => { if (c && c.src !== "demo" && !c.radio && !seen.has(c)) { seen.add(c); out.push(c); } };
     if (filter !== "all" || query) visible().slice(0, shown).forEach(add);
     nationals().forEach((x) => add(x.c));
     chanList(state.recent).forEach(add);
@@ -873,11 +888,12 @@ const CONFIG = {
   function rebuild() {
     const groups = new Map();
     channels = []; urlMap = new Map();
-    const sources = [...state.lists.map((l) => [l.text, l.id]), [regionText, "region"]];
+    const sources = [...state.lists.map((l) => [l.text, l.id]), [regionText, "region"], [radioText, "radio"]];
     if (loadFailed && !regionText) sources.push([DEMO, "demo"]);
     for (const [t, id] of sources) for (const c of parseM3U(t || "", id)) {
       if (urlMap.has(c.url)) continue;
-      const keys = [c.id && "i:" + c.id.toLowerCase(), "n:" + norm(c.name) + "|" + c.cc].filter(Boolean);
+      // Una radio nunca se junta con un canal de tele del mismo nombre.
+      const keys = c.radio ? ["r:" + norm(c.name)] : [c.id && "i:" + c.id.toLowerCase(), "n:" + norm(c.name) + "|" + c.cc].filter(Boolean);
       const g = keys.map((k) => groups.get(k)).find(Boolean);
       if (g) {
         g.urls.push(c.url); urlMap.set(c.url, g);
@@ -891,6 +907,61 @@ const CONFIG = {
       keys.forEach((k) => groups.set(k, c));
     }
     channels.forEach((c, i) => { c.n = i; c.h = [...c.name].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 360, 7); });
+    openShared();
+  }
+
+  /* ---------- Radios (api/radios.js) ----------
+     Llegan del servidor ya revisadas (cada 12 h) y se suman como canales de la categoría «Radios».
+     No se prueban desde el teléfono: muchas no dejan leerse desde otra página, pero igual suenan. */
+  let radioText = "";
+  const directUrls = new Set(); // radios que no son HLS: se tocan directo, sin hls.js
+  function radiosM3U(list) {
+    directUrls.clear();
+    return "#EXTM3U\n" + list.filter((r) => r && /^https:\/\//i.test(r.url || "")).map((r) => {
+      if (!r.hls) directUrls.add(r.url);
+      const nombre = String(r.nombre || "Radio").replace(/[\r\n,"]/g, " ").trim();
+      return '#EXTINF:-1 tvg-logo="' + String(r.logo || "").replace(/"/g, "") + '" group-title="Radios",' + nombre + "\n" + r.url;
+    }).join("\n");
+  }
+  try { const j = JSON.parse(cacheGet("radios:json") || "null"); if (j) radioText = radiosM3U(j); } catch {}
+  async function loadRadios() {
+    const cc = CONFIG.radios && CONFIG.radios.pais;
+    if (!cc) { radioText = ""; return; }
+    try {
+      const r = await fetch("api/radios?pais=" + encodeURIComponent(cc));
+      if (!r.ok) return;
+      const j = await r.json();
+      if (!Array.isArray(j.radios) || !j.radios.length) return;
+      cacheSet("radios:json", JSON.stringify(j.radios));
+      radioText = radiosM3U(j.radios);
+      rebuild(); softRender();
+    } catch {}
+  }
+
+  /* ---------- Compartir ----------
+     Cada canal tiene su link: https://antena-tv.vercel.app/c/<canal>. Al pegarlo en WhatsApp se ve con
+     su nombre y su logo (api/canal.js) y, al tocarlo, la tele se abre directo en ese canal. */
+  // Igual que slug() en api/canal.js.
+  const slug = (t) => norm(t).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+  const chanSlug = (c) => (c.radio ? "radio-" + slug(c.name) : slug(c.id || c.name));
+  const shareUrl = (c) => new URL("c/" + chanSlug(c), location.href.split(/[?#]/)[0]).href;
+  let wanted = new URLSearchParams(location.search).get("canal") || "";
+  if (wanted) history.replaceState(null, "", location.pathname);
+  function openShared() {
+    if (!wanted || !channels.length) return;
+    const c = channels.find((x) => chanSlug(x) === wanted || (!x.radio && slug(x.name) === wanted));
+    if (!c) return;
+    wanted = "";
+    setTimeout(() => { if (!current) { play(c); toast(c.radio ? "Toca ▶ para escuchar " + c.name : "Toca ▶ para ver " + c.name); } }, 0);
+  }
+  async function share(c) {
+    const url = shareUrl(c);
+    const text = (c.radio ? "Escucha " : "Mira ") + c.name + " en vivo y gratis en " + CONFIG.marca + ":";
+    try {
+      if (navigator.share) { await navigator.share({ title: c.name + " · " + CONFIG.marca, text, url }); return; }
+    } catch (e) { if (e && e.name === "AbortError") return; }
+    try { await navigator.clipboard.writeText(text + " " + url); toast("Link copiado: pégalo en WhatsApp o donde quieras"); }
+    catch { prompt("Copia este link:", url); }
   }
   async function fetchText(url) {
     const r = await fetch(url, { cache: "no-store" });
@@ -935,7 +1006,7 @@ const CONFIG = {
       .catch(() => { guides[cc] = {}; setTimeout(() => delete guides[cc], 10 * 60000); });
   }
   function programmes(c) {
-    const g = c && guides[c.cc || region().cc];
+    const g = c && !c.radio && guides[c.cc || region().cc];
     if (!g) return null;
     const n = gnorm(c.name);
     return (c.id && g[c.id]) || (n && g["n:" + n]) || null;
@@ -1031,6 +1102,7 @@ const CONFIG = {
     if (isDown(c)) return "Sin señal por ahora";
     const on = onAir(c);
     if (on) return "Ahora: " + on[2];
+    if (c.radio) return "Radio en vivo";
     return c.part ? "En vivo a ciertas horas" : "En vivo";
   }
   function card(c, list) {
@@ -1051,7 +1123,7 @@ const CONFIG = {
     const cc = natCountry(), used = new Set(), items = [];
     for (const d of CONFIG.nacionales[cc] || []) {
       const re = new RegExp("(^|[^a-z0-9])(" + d.buscar.map((t) => esc(norm(t))).join("|") + ")(?![a-z0-9])", "i");
-      const found = channels.filter((c) => !used.has(c.url) && (!c.cc || c.cc === cc) && re.test(norm(c.name)));
+      const found = channels.filter((c) => !c.radio && !used.has(c.url) && (!c.cc || c.cc === cc) && re.test(norm(c.name)));
       const live = found.filter((c) => !isDown(c));
       const pick = live.length ? live.slice(0, 2) : d.web ? [] : found.slice(0, 1);
       pick.forEach((c) => { used.add(c.url); items.push({ c }); });
@@ -1093,7 +1165,7 @@ const CONFIG = {
       if (g === OTROS) continue;
       const i = catInfo(g), b = el("button", "cat"); b.type = "button";
       b.style.setProperty("--h", i.color);
-      b.append(el("span", "ci", i.icono), el("b", "", g), el("span", "", n === 1 ? "1 canal" : n + " canales"));
+      b.append(el("span", "ci", i.icono), el("b", "", g), el("span", "", g === "Radios" ? (n === 1 ? "1 radio" : n + " radios") : n === 1 ? "1 canal" : n + " canales"));
       b.setAttribute("aria-label", g + ", " + n + " canales");
       b.onclick = () => setFilter(g);
       grid.append(b);
@@ -1241,7 +1313,7 @@ const CONFIG = {
   async function attach(video, url, onFail) {
     let hls = null, dead = false;
     const stop = () => { dead = true; if (hls) hls.destroy(); video.removeAttribute("src"); video.load(); };
-    const isFile = /\.(mp4|webm|mov|mp3|aac)(\?|$)/i.test(url);
+    const isFile = directUrls.has(url) || /\.(mp4|webm|mov|mp3|aac)(\?|$)/i.test(url);
     try {
       if (!isFile && !nativeHls) {
         const Hls = await loadHls();
@@ -1266,6 +1338,7 @@ const CONFIG = {
   function failReason(c) {
     if (location.protocol === "https:" && /^http:\/\//i.test(c.url)) return "Esta señal usa http:// y el navegador la bloquea en una página segura.";
     if (c.geo) return "Esta señal solo se puede ver dentro de su país.";
+    if (c.radio) return "Esta radio no está transmitiendo ahora. Puede estar caída por un rato.";
     return "Este canal no está transmitiendo ahora. Puede estar caído o fuera de horario.";
   }
 
@@ -1343,6 +1416,9 @@ const CONFIG = {
     $("#favBtn").setAttribute("aria-pressed", String(fav));
     $("#favBtn").setAttribute("aria-label", fav ? "Quitar de favoritos" : "Agregar a favoritos");
     document.title = c.name + " · " + CONFIG.marca;
+    const art = $("#radioArt");
+    art.hidden = !c.radio || multiOn;
+    if (c.radio) { art.style.setProperty("--h", c.h); art.replaceChildren(logoEl(c), el("b", "", c.name), el("span", "", "📻 Radio en vivo")); }
     paintProg();
   }
   function step(d) {
@@ -1362,6 +1438,7 @@ const CONFIG = {
   video.addEventListener("error", () => { if (current && video.getAttribute("src") && curFail) curFail(); });
   video.addEventListener("canplay", () => { if (video.paused && $("#failed").hidden) setOverlay(null); });
   $("#retry").onclick = () => current && play(current);
+  $("#shareBtn").onclick = () => { const c = multiOn ? slots[sel] : current; if (c) share(c); };
   $("#skip").onclick = () => step(1);
   $("#prev").onclick = () => step(-1);
   $("#next").onclick = () => step(1);
@@ -1385,7 +1462,7 @@ const CONFIG = {
   }
   $("#surprise").onclick = () => {
     const act = activeList();
-    const pool = act.filter((c) => !c.geo && !c.part && c.cats.some((g) => ["Noticias", "Música", "General", "Entretención"].includes(g)));
+    const pool = act.filter((c) => !c.radio && !c.geo && !c.part && c.cats.some((g) => ["Noticias", "Música", "General", "Entretención"].includes(g)));
     const list = pool.length ? pool : act.length ? act : channels;
     if (list.length) play(list[Math.floor(Math.random() * list.length)], list);
   };
@@ -1627,6 +1704,7 @@ const CONFIG = {
   paintPlus(); applyTheme();
   pruneDead(); save();
   loadRegion();
+  loadRadios();
   document.addEventListener("keydown", (e) => {
     if (e.target.closest("input, textarea, dialog")) return;
     if (e.key === "/") { e.preventDefault(); $("#q").focus(); }
