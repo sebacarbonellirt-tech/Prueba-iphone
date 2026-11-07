@@ -203,7 +203,30 @@ const CONFIG = {
       detalle: "Índice comunitario de señales que los canales publican gratis en internet. Algunas pueden estar caídas.",
       url: "https://iptv-org.github.io/iptv/countries/cl.m3u",
     },
+    {
+      nombre: "Canales abiertos de Argentina (iptv-org)",
+      detalle: "Señales abiertas que se emiten gratis por internet.",
+      url: "https://iptv-org.github.io/iptv/countries/ar.m3u",
+    },
+    {
+      nombre: "Canales abiertos de México (iptv-org)",
+      detalle: "Señales abiertas que se emiten gratis por internet.",
+      url: "https://iptv-org.github.io/iptv/countries/mx.m3u",
+    },
+    {
+      nombre: "Canales abiertos de España (iptv-org)",
+      detalle: "Señales abiertas que se emiten gratis por internet.",
+      url: "https://iptv-org.github.io/iptv/countries/es.m3u",
+    },
+    {
+      nombre: "Noticias del mundo (iptv-org)",
+      detalle: "Canales de noticias de todos los países que transmiten gratis en internet.",
+      url: "https://iptv-org.github.io/iptv/categories/news.m3u",
+    },
   ],
+  // Listas de «ejemplos» que se cargan solas la primera vez que se abre la app.
+  // Solo señales abiertas. Deja [] para que la app empiece vacía.
+  precargar: ["Canales abiertos de Chile (iptv-org)"],
   // Cuántos canales se dibujan de una vez (las listas grandes se paginan).
   porPagina: 200,
 
@@ -381,6 +404,13 @@ const CONFIG = {
   }
 
   /* ---------- Lector de M3U ---------- */
+  // Categorías de iptv-org (vienen en inglés) traducidas al español.
+  const GROUPS = { news: "Noticias", general: "General", entertainment: "Entretención", music: "Música", sports: "Deportes",
+    movies: "Películas", series: "Series", kids: "Infantil", animation: "Animación", documentary: "Documentales",
+    culture: "Cultura", education: "Educación", religious: "Religión", lifestyle: "Estilo de vida", cooking: "Cocina",
+    travel: "Viajes", business: "Economía", legislative: "Congreso", weather: "Clima", comedy: "Comedia", family: "Familia",
+    classic: "Clásicos", science: "Ciencia", outdoor: "Aire libre", auto: "Autos", shop: "Compras", relax: "Relajo",
+    undefined: "Sin categoría" };
   function parseM3U(text, listId) {
     const out = [];
     let info = null, extGroup = "";
@@ -398,7 +428,8 @@ const CONFIG = {
       } else if (line.startsWith("#")) {
         continue;
       } else if (/^(https?|rtmp|rtsp):\/\//i.test(line) || /\.(m3u8|mp4|ts|mpd)(\?|$)/i.test(line)) {
-        const group = (info && info.group) || extGroup || "Sin categoría";
+        const raw = ((info && info.group) || extGroup || "").split(";")[0].trim();
+        const group = GROUPS[raw.toLowerCase()] || raw || "Sin categoría";
         const name = (info && info.name) || line.split("/").pop().split("?")[0] || line;
         out.push({ id: listId + "|" + line, name, logo: (info && info.logo) || "", group, url: line, list: listId });
         info = null; extGroup = "";
@@ -845,6 +876,12 @@ const CONFIG = {
     fetchText(fixed.url).then((t) => { fixed.text = t; rebuild(); render(); if (channels[0]) play(channels[0], channels); })
       .catch(() => toast("No se pudo cargar la lista del canal"));
   } else if (fixed && channels[0]) play(channels[0], channels);
+  else if (!state.seeded && !state.lists.length && CONFIG.precargar.length) {
+    // Primera vez: carga los canales abiertos para que la app no parta vacía.
+    toast("Cargando canales abiertos…");
+    Promise.all(CONFIG.precargar.map((n) => CONFIG.ejemplos.find((e) => e.nombre === n)).filter(Boolean).map((e) => addExample(e)))
+      .then((ok) => { if (ok.some(Boolean)) { state.seeded = true; save(); } });
+  }
   refreshLists();
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 })();

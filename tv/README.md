@@ -90,6 +90,12 @@ categorías, búsqueda sin tildes, favoritos, recientes, canal anterior/siguient
 imagen en imagen y controles en la pantalla bloqueada. Todo queda en el dispositivo.
 Usa HLS nativo en Safari y carga hls.js solo en navegadores que lo necesitan.
 
+**Viene con canales abiertos:** la primera vez que se abre, carga sola la lista de canales
+abiertos de Chile de [iptv-org](https://github.com/iptv-org/iptv) (señales que los propios
+canales publican gratis en internet). En «Listas → Listas de ejemplo» se pueden sumar
+Argentina, México, España y Noticias del mundo. Se cambia en `CONFIG.precargar` y
+`CONFIG.ejemplos`. Algunas señales pueden estar caídas o bloqueadas fuera de su país.
+
 Limitaciones del navegador:
 - Una página https no puede reproducir señales `http://`.
 - Algunos servidores no dejan leer su lista desde el navegador (CORS): súbela como archivo.
