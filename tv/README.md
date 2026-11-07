@@ -18,16 +18,16 @@ tv/
 
 | Parte | Detalle |
 | --- | --- |
-| Portada | Filas por categoría (Noticias, Deportes, Música, Infantil…), «Seguir viendo» y «Tus favoritos». |
-| Nacionales | Primera fila de la portada: los canales de señal abierta del país (en «En español», de Chile). Si la lista trae su señal oficial, se ve en la app; si no, la tarjeta abre su transmisión en vivo en el sitio oficial. Hay links oficiales comprobados para Chile, Argentina, México, Colombia, Perú y España (los de España suelen verse solo desde España). Se editan en `CONFIG.nacionales`. |
-| Países | Fila de banderas con 21 países (Latinoamérica, España y EE. UU.). Al tocar uno se cargan sus canales, con sus nacionales primero. Se editan en `CONFIG.paises`. |
+| Portada | Un saludo corto con «Ver un canal ahora», el buscador y **«¿Qué quieres ver?»**: un botón grande con dibujo y color por categoría. Debajo, «TV abierta», «Seguir viendo», «Tus favoritos» y una fila por categoría. |
+| Categorías | Nueve, claras: Noticias, Deportes, Películas, Series, Música, Infantil, Entretención, Cultura y Religión (más «Más canales» para los que no traen categoría). Las de iptv-org se juntan en estas (por ejemplo Clima y Congreso van en Noticias; Cocina y Viajes en Entretención). Nombre, dibujo, color y orden se editan en `CONFIG.categorias`. Al tocar una se ven todos sus canales, con botones arriba para pasar a otra. |
+| TV abierta | Primera fila: los canales de señal abierta de Chile (`paisPrincipal`). Si la lista trae su señal oficial, se ve en la app; si no, la tarjeta abre su transmisión en vivo en el sitio oficial. Hay links oficiales comprobados para Chile, Argentina, México, Colombia, Perú y España (los de España suelen verse solo desde España). Se editan en `CONFIG.nacionales`. |
 | Buscador | Busca en todos los canales, sin importar tildes. |
 | Reproductor | Canal anterior/siguiente, favoritos, pantalla completa, AirPlay e imagen en imagen. Debajo, lo que dan **ahora** (con barra de avance) y **después**. |
 | Señal de respaldo | Si un canal viene más de una vez en la lista, se muestra una sola tarjeta y las otras señales quedan de respaldo: si una falla o no arranca en 15 segundos, pasa sola a la siguiente. El botón «⇄ 1/2» junto a «En vivo» cambia de señal a mano. |
 | Guía | Al tocar «Guía ›» se abre la programación del canal. «Ahora» y «Después» son gratis; la guía completa de hoy y mañana es de Plus (`CONFIG.guia.soloPlus`). |
-| Tarjetas | Bandera del país y el programa que están dando (si hay guía); si no, la categoría y avisos «Solo en su país» o «No 24/7». |
+| Tarjetas | El programa que están dando (si hay guía); si no, «En vivo» («En vivo a ciertas horas» si no transmite todo el día). |
 | Mis listas | Quien tenga su propia lista M3U puede sumarla (link, archivo o texto). |
-| Sin conexión | Si no carga la región, muestra videos de prueba y un aviso. |
+| Sin conexión | Si no cargan los canales, muestra videos de prueba y un aviso. |
 | Filtros | Se ocultan solos los canales para adultos y las copias no oficiales de canales de pago (ver «Lo legal»). |
 | Canales inactivos | Los que no responden salen de sus categorías y quedan en una sección propia al final (y en el filtro «Inactivos»). Cuando vuelven, regresan solos. |
 
@@ -61,7 +61,7 @@ Los horarios se muestran en la hora del teléfono.
 Tres revisiones trabajan juntas, y ninguna espera a que alguien toque el canal:
 
 1. **En cada teléfono, apenas se abre la tele**: en segundo plano, el teléfono prueba las señales
-   de la región. Empieza por lo que está a la vista (nacionales, «Seguir viendo», favoritos y las
+   de la lista. Empieza por lo que está a la vista (TV abierta, «Seguir viendo», favoritos y las
    primeras tarjetas de cada fila) y sigue con el resto. Los canales que no responden pasan solos
    a «Canales inactivos» en pocos segundos y en su lugar aparecen otros que sí funcionan. Prueba
    desde el país de quien mira y solo descarga el comienzo de cada señal (unos pocos kB).
@@ -73,7 +73,7 @@ Tres revisiones trabajan juntas, y ninguna espera a que alguien toque el canal:
      igual: en esas solo se confirma que su servidor contesta. En Android y computadores no se
      pueden reproducir, así que ahí se marcan como inactivas.
 2. **En el servidor** (`api/estado.js`, una función de Vercel): prueba todas las señales de la
-   región y devuelve las que no responden (error, página caída, o más de 6 segundos sin
+   lista y devuelve las que no responden (error, página caída, o más de 6 segundos sin
    contestar). Vercel guarda el resultado 6 horas, así que la revisión corre pocas veces al
    día y es igual para todos los visitantes. Las señales que niegan el acceso (403, típico de
    las que solo se ven en su país) **no** se marcan como caídas, porque el servidor está en
@@ -142,15 +142,15 @@ atrae público. Más adelante puedes ofrecerles un lugar destacado.
 | Campo | Para qué |
 | --- | --- |
 | `whatsapp`, `email` | Tu contacto. **Cámbialos primero**: ventas de Plus y pedidos de retiro llegan ahí. |
-| `regiones`, `regionInicial` | Qué listas se ofrecen y cuál se ve al entrar. |
-| `categorias` | Orden de las filas en la portada. |
+| `regiones` | De dónde salen los canales (hoy, todos los canales en español de iptv-org). |
+| `paisPrincipal`, `nacionales` | De qué país es la fila «TV abierta» y qué canales lleva (hay listos para cl, ar, mx, co, pe y es). |
+| `categorias` | Nombre, dibujo (`icono`), color y orden de las categorías. |
 | `ocultar` | Nombres o links de señales a retirar. |
 | `auspiciadores` | Banners publicitarios. |
 | `plus` | Nombre, planes, precios, links de pago, beneficios y códigos. |
 
-Para sumar canales propios o de canales que te escriban, crea un archivo `tv/canales.m3u`
-y agrégalo como región (`{ id: "mios", nombre: "Destacados", url: "canales.m3u" }`), o
-súmalo desde «Mis listas».
+Para sumar canales propios o de canales que te escriban, agrégalos desde «Mis listas» (botón
+al final de la página): aparecen junto a los demás, en su categoría.
 
 ## Publicada
 

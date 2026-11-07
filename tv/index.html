@@ -81,9 +81,6 @@ p { margin: 0; }
 .top .wrap { display: flex; align-items: center; gap: 10px; padding-block: 10px; }
 .brand { display: flex; align-items: center; gap: 9px; font: 800 1.25rem/1 var(--f-display); letter-spacing: -.01em; margin-right: auto; text-decoration: none; }
 .brand svg { width: 34px; height: 34px; flex: none; }
-.region { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); font-weight: 600; font-size: .88rem; cursor: pointer; max-width: 42vw; }
-.region span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.region svg { width: 16px; height: 16px; flex: none; }
 .plus-pill { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 13px; border-radius: 12px; border: 0; background: var(--plus); color: var(--plus-ink); font-weight: 700; font-size: .88rem; cursor: pointer; }
 .plus-pill svg { width: 17px; height: 17px; }
 .plus-pill.on { background: transparent; color: var(--plus); box-shadow: inset 0 0 0 1.5px var(--plus); }
@@ -145,13 +142,27 @@ p { margin: 0; }
 .slot .x { position: absolute; right: 6px; top: 6px; width: 26px; height: 26px; border-radius: 7px; border: 0; background: rgba(0,0,0,.6); color: #fff; display: grid; place-items: center; cursor: pointer; }
 .multi-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 10px; font-size: .85rem; color: var(--muted); }
 
-/* Portada */
-.hero { padding-block: 18px 6px; }
-.hero-card { display: grid; gap: 14px; padding: 22px; border-radius: 22px; background: radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 28%, var(--surface)), var(--surface) 60%); box-shadow: var(--shadow); }
-.hero h1 { font-size: clamp(2rem, 8vw, 3.4rem); line-height: .98; font-weight: 800; letter-spacing: -.03em; }
+/* Portada: saludo corto (para que los canales se vean apenas se abre) */
+.hero { padding-block: 12px 0; }
+.hero-card { display: grid; gap: 14px; padding: 18px; border-radius: 20px; background: radial-gradient(120% 160% at 0% 0%, color-mix(in srgb, var(--accent) 24%, var(--surface)), var(--surface) 65%); box-shadow: var(--shadow); }
+@media (min-width: 680px) { .hero-card { grid-template-columns: 1fr auto; align-items: center; padding: 22px 26px; } }
+.hero h1 { font-size: clamp(1.6rem, 6.4vw, 2.4rem); line-height: 1.05; font-weight: 800; letter-spacing: -.02em; margin-top: 6px; }
 .hero h1 em { font-style: normal; color: var(--accent); }
-.hero p { color: var(--muted); max-width: 34em; }
-.hero .ctas { display: flex; flex-wrap: wrap; gap: 10px; }
+.hero p { color: var(--muted); margin-top: 6px; font-size: .95rem; }
+.hero .btn { min-height: 52px; font-size: 1.02rem; }
+
+/* Categorías: botones grandes con dibujo y color */
+.cats { padding-block: 8px 4px; }
+.cats h2 { font-size: 1.25rem; font-weight: 800; margin-bottom: 10px; }
+.cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+@media (min-width: 680px) { .cat-grid { grid-template-columns: repeat(5, 1fr); gap: 10px; } }
+@media (min-width: 1000px) { .cat-grid { grid-template-columns: repeat(9, 1fr); } }
+.cat { display: grid; justify-items: center; align-content: center; gap: 4px; min-height: 92px; padding: 10px 6px; border: 0; border-radius: 16px; cursor: pointer; text-align: center; color: var(--ink);
+  background: color-mix(in srgb, hsl(var(--h) 75% 55%) 17%, var(--surface)); -webkit-tap-highlight-color: transparent; transition: transform .12s ease; }
+.cat:active { transform: scale(.96); }
+.cat .ci { font-size: 1.9rem; line-height: 1; }
+.cat b { font-weight: 700; font-size: .9rem; line-height: 1.15; }
+.cat span { font-size: .72rem; color: var(--muted); }
 
 /* Buscador y categorías */
 .tools { display: grid; gap: 10px; padding-block: 14px 6px; }
@@ -184,8 +195,6 @@ p { margin: 0; }
 .card .cmeta { font-size: .75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card.web { text-decoration: none; color: inherit; }
 .card.web .logo::after { content: "↗"; position: absolute; right: 8px; bottom: 6px; font: 700 .85rem/1 var(--f-body); color: var(--muted); }
-.card.country .logo { font: 400 2.6rem/1 system-ui, sans-serif; }
-.card.country[aria-current="true"] .logo { box-shadow: 0 0 0 2.5px var(--accent); }
 .shelf.nat { padding-top: 18px; }
 .count { font-size: .8rem; color: var(--muted); padding-block: 6px 10px; font-family: var(--f-mono); }
 .more { margin-top: 16px; }
@@ -270,24 +279,14 @@ const CONFIG = {
   contacto: "https://github.com/sebacarbonellirt-tech/Prueba-iphone/issues/new?title=Retirar%20se%C3%B1al%20de%20Antena", // si no hay email
 
   // De dónde salen los canales: índice comunitario iptv-org de señales que sus dueños
-  // publican gratis en internet. El público elige en el botón de arriba o en la fila «Países».
+  // publican gratis en internet (todos los canales en español, ordenados por categoría).
   regiones: [
     { id: "spa", nombre: "En español", url: "https://iptv-org.github.io/iptv/languages/spa.m3u" },
   ],
-  // Cada país usa su lista de iptv-org (countries/<código>.m3u). El orden es el de la fila «Países».
-  paises: [
-    { cc: "cl", nombre: "Chile" }, { cc: "ar", nombre: "Argentina" }, { cc: "mx", nombre: "México" },
-    { cc: "co", nombre: "Colombia" }, { cc: "pe", nombre: "Perú" }, { cc: "ve", nombre: "Venezuela" },
-    { cc: "ec", nombre: "Ecuador" }, { cc: "bo", nombre: "Bolivia" }, { cc: "uy", nombre: "Uruguay" },
-    { cc: "py", nombre: "Paraguay" }, { cc: "cr", nombre: "Costa Rica" }, { cc: "pa", nombre: "Panamá" },
-    { cc: "gt", nombre: "Guatemala" }, { cc: "hn", nombre: "Honduras" }, { cc: "sv", nombre: "El Salvador" },
-    { cc: "ni", nombre: "Nicaragua" }, { cc: "do", nombre: "Rep. Dominicana" }, { cc: "pr", nombre: "Puerto Rico" },
-    { cc: "cu", nombre: "Cuba" }, { cc: "es", nombre: "España" }, { cc: "us", nombre: "Estados Unidos" },
-  ],
   regionInicial: "spa",
-  paisPrincipal: "cl",   // de qué país son los «Nacionales» cuando se mira «En español»
+  paisPrincipal: "cl",   // de qué país son los canales de la fila «TV abierta» (ver «nacionales»)
 
-  // Canales nacionales de señal abierta: van primero en la portada de cada país.
+  // Canales de señal abierta: van primero en la portada, en la fila «TV abierta» (los del país de «paisPrincipal»).
   // «buscar» = nombres con que aparecen en la lista (solo se usan sus señales oficiales).
   // «web» = su transmisión en vivo en el sitio oficial, para cuando la lista no trae una señal oficial.
   // «sigla» = lo que se lee en la tarjeta del sitio oficial.
@@ -363,8 +362,19 @@ const CONFIG = {
     ],
   },
 
-  // Orden de las filas en la portada (las demás categorías van después, en orden alfabético).
-  categorias: ["Noticias", "Deportes", "Música", "Infantil", "Películas", "Series", "Entretención", "Cultura", "Documentales", "Religión"],
+  // Categorías: botones de «¿Qué quieres ver?» y filas de la portada, en este orden.
+  // «color» = tono de 0 a 360 (0 rojo, 120 verde, 220 azul, 280 morado). Los canales sin categoría van en «Más canales».
+  categorias: [
+    { nombre: "Noticias", icono: "📰", color: 5 },
+    { nombre: "Deportes", icono: "⚽", color: 135 },
+    { nombre: "Películas", icono: "🎬", color: 275 },
+    { nombre: "Series", icono: "🍿", color: 30 },
+    { nombre: "Música", icono: "🎵", color: 325 },
+    { nombre: "Infantil", icono: "🧸", color: 45 },
+    { nombre: "Entretención", icono: "🎭", color: 210 },
+    { nombre: "Cultura", icono: "🌎", color: 175 },
+    { nombre: "Religión", icono: "🙏", color: 255 },
+  ],
   porFila: 24,       // canales por fila en la portada
   porPagina: 120,    // canales por página al filtrar o buscar
 
@@ -419,10 +429,6 @@ const CONFIG = {
       <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="var(--accent)"/><path d="M22 14l10 12 10-12" fill="none" stroke="var(--accent-ink)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><rect x="12" y="26" width="40" height="26" rx="6" fill="none" stroke="var(--accent-ink)" stroke-width="4"/></svg>
       <span class="js-brand">Antena</span>
     </a>
-    <button class="region" id="regionBtn" aria-label="Elegir región de canales">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg>
-      <span id="regionName">En español</span>
-    </button>
     <button class="plus-pill" id="plusBtn">
       <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 18l2-11 5 5 2-7 2 7 5-5 2 11z"/></svg>
       <span id="plusLabel">Plus</span>
@@ -478,13 +484,12 @@ const CONFIG = {
   <!-- Portada -->
   <section class="hero wrap" id="hero">
     <div class="hero-card">
-      <span class="live">Gratis · en vivo</span>
-      <h1>La tele, <em>gratis</em> en tu celular.</h1>
-      <p>Noticias, deportes, música, infantil y más. Canales abiertos de Chile y Latinoamérica, sin registrarte y sin instalar nada.</p>
-      <div class="ctas">
-        <button class="btn" id="surprise"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Ver un canal ahora</button>
-        <button class="btn ghost" id="heroPlus">Conoce Plus</button>
+      <div>
+        <span class="live">En vivo · gratis</span>
+        <h1>La tele, <em>gratis</em> en tu celular.</h1>
+        <p>Elige qué ver y toca un canal. Sin registrarte.</p>
       </div>
+      <button class="btn" id="surprise"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Ver un canal ahora</button>
     </div>
   </section>
 
@@ -507,20 +512,14 @@ const CONFIG = {
   <p><button class="btn sm ghost" id="listsBtn">Mis listas M3U</button></p>
 </footer>
 
-<!-- Región y listas propias -->
+<!-- Listas propias -->
 <dialog id="sheet" aria-labelledby="sheetTitle">
   <div class="sheet">
     <div class="sheet-head">
-      <h2 id="sheetTitle">Canales</h2>
+      <h2 id="sheetTitle">Mis listas</h2>
       <button class="icon-btn" data-close aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <div class="box">
-      <h3>Región</h3>
-      <div class="regions" id="regions"></div>
-      <p class="note">Algunas señales solo se ven dentro de su país o no transmiten las 24 horas.</p>
-    </div>
-    <div class="box">
-      <h3>Mis listas</h3>
       <p class="note">Si tienes tu propia lista M3U, agrégala y sus canales aparecen junto a los demás.</p>
       <ul class="lists" id="mine"></ul>
       <div class="tabs" role="tablist">
@@ -619,12 +618,16 @@ const CONFIG = {
   const isPlus = () => !!state.plus;
 
   /* ---------- Lector de M3U (formato iptv-org) ---------- */
-  const GROUPS = { news: "Noticias", general: "General", entertainment: "Entretención", music: "Música", sports: "Deportes",
-    movies: "Películas", series: "Series", kids: "Infantil", animation: "Animación", documentary: "Documentales",
-    culture: "Cultura", education: "Educación", religious: "Religión", lifestyle: "Estilo de vida", cooking: "Cocina",
-    travel: "Viajes", business: "Economía", legislative: "Congreso", weather: "Clima", comedy: "Comedia", family: "Familia",
-    classic: "Clásicos", science: "Ciencia", outdoor: "Aire libre", auto: "Autos", shop: "Compras", relax: "Relajo",
-    public: "Públicos", undefined: "Otros" };
+  // Las categorías de iptv-org se juntan en pocas y claras (las de CONFIG.categorias).
+  const OTROS = "Más canales";
+  const GROUPS = { news: "Noticias", weather: "Noticias", business: "Noticias", legislative: "Noticias",
+    sports: "Deportes", outdoor: "Deportes", auto: "Deportes", movies: "Películas", classic: "Películas", series: "Series",
+    music: "Música", kids: "Infantil", animation: "Infantil",
+    general: "Entretención", entertainment: "Entretención", lifestyle: "Entretención", cooking: "Entretención", travel: "Entretención",
+    comedy: "Entretención", family: "Entretención", shop: "Entretención", relax: "Entretención", public: "Entretención",
+    documentary: "Cultura", culture: "Cultura", education: "Cultura", science: "Cultura", religious: "Religión", undefined: OTROS };
+  const catInfo = (g) => CONFIG.categorias.find((c) => c.nombre === g) || { nombre: g, icono: g === OTROS ? "➕" : "📺", color: 220 };
+  const catTitle = (g) => catInfo(g).icono + " " + g;
   const ADULT = /\b(xxx|adult|adulto|erotic|porn)/i;
   const hidden = new Set(CONFIG.ocultar.map(norm));
   const esc = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -640,11 +643,6 @@ const CONFIG = {
     return PAGO.test(norm(name));
   }
 
-  function flag(cc) {
-    if (!/^[a-z]{2}$/i.test(cc || "")) return "";
-    cc = cc.toUpperCase() === "UK" ? "GB" : cc.toUpperCase();
-    return String.fromCodePoint(...[...cc].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
-  }
   function parseM3U(text, src) {
     const out = [];
     let info = null, extGroup = "";
@@ -669,7 +667,7 @@ const CONFIG = {
         const rawGroups = i.groups.length ? i.groups : extGroup ? [extGroup] : [];
         if (rawGroups.some((g) => ADULT.test(g)) || ADULT.test(i.name)) { info = null; continue; }
         const cats = [...new Set(rawGroups.map((g) => GROUPS[g.toLowerCase()] || g))];
-        if (!cats.length) cats.push("Otros");
+        if (!cats.length) cats.push(OTROS);
         const name = i.name || decodeURIComponent(line.split("/").pop().split("?")[0]) || "Canal";
         if (!hidden.has(norm(name)) && !hidden.has(norm(line)) && !(src === "region" && noOficial(name, line)))
           out.push({ name, id: i.id, logo: i.logo, cats, group: cats[0], cc: i.cc, geo: i.geo, part: i.part, url: line, src });
@@ -867,13 +865,7 @@ const CONFIG = {
     return m < 60 ? "hace " + m + " min" : "hace " + Math.round(m / 60) + " h";
   }
   const IPTV = "https://iptv-org.github.io/iptv/countries/";
-  const allRegions = () => [...CONFIG.regiones, ...CONFIG.paises.map((p) => ({ id: p.cc, cc: p.cc, nombre: p.nombre, url: p.lista || IPTV + p.cc + ".m3u" }))];
-  const region = () => allRegions().find((r) => r.id === state.region) || allRegions()[0];
-  function selectRegion(id) {
-    if (state.region === id && regionText) return scrollTo({ top: 0, behavior: "smooth" });
-    state.region = id; save(); filter = "all"; query = ""; $("#q").value = "";
-    loadRegion(); scrollTo({ top: 0, behavior: "smooth" });
-  }
+  const region = () => CONFIG.regiones.find((r) => r.id === state.region) || CONFIG.regiones[0];
   let regionText = "";
   let urlMap = new Map();
   // Junta las señales del mismo canal (mismo tvg-id, o mismo nombre y país) en una sola tarjeta:
@@ -907,7 +899,6 @@ const CONFIG = {
   }
   async function loadRegion() {
     const r = region();
-    $("#regionName").textContent = r.nombre;
     regionText = cacheGet(r.id);
     loading = !regionText; loadFailed = false; serverDown = new Set(); statusAt = 0;
     rebuild(); render();
@@ -1014,9 +1005,9 @@ const CONFIG = {
   function catList() {
     const counts = new Map();
     for (const c of activeList()) for (const g of c.cats) counts.set(g, (counts.get(g) || 0) + 1);
-    const pri = CONFIG.categorias.filter((g) => counts.has(g));
-    const rest = [...counts.keys()].filter((g) => !pri.includes(g) && g !== "Otros").sort((a, b) => a.localeCompare(b, "es"));
-    return [...pri, ...rest, ...(counts.has("Otros") ? ["Otros"] : [])].map((g) => [g, counts.get(g)]);
+    const pri = CONFIG.categorias.map((c) => c.nombre).filter((g) => counts.has(g));
+    const rest = [...counts.keys()].filter((g) => !pri.includes(g) && g !== OTROS).sort((a, b) => a.localeCompare(b, "es"));
+    return [...pri, ...rest, ...(counts.has(OTROS) ? [OTROS] : [])].map((g) => [g, counts.get(g)]);
   }
 
   function initials(name) {
@@ -1037,10 +1028,10 @@ const CONFIG = {
   }
   // Línea gris de la tarjeta: lo que dan ahora (si hay guía) o la categoría.
   function cardMeta(c) {
-    if (isDown(c)) return [flag(c.cc), "Sin señal"].filter(Boolean).join(" · ");
+    if (isDown(c)) return "Sin señal por ahora";
     const on = onAir(c);
-    if (on) return [flag(c.cc), on[2]].filter(Boolean).join(" ");
-    return [flag(c.cc), c.group, c.geo ? "Solo en su país" : "", c.part ? "No 24/7" : ""].filter(Boolean).join(" · ");
+    if (on) return "Ahora: " + on[2];
+    return c.part ? "En vivo a ciertas horas" : "En vivo";
   }
   function card(c, list) {
     const down = isDown(c);
@@ -1049,13 +1040,12 @@ const CONFIG = {
     if (isFav(c)) lg.append(el("span", "fav", "★"));
     if (current && current.url === c.url) { b.setAttribute("aria-current", "true"); lg.append(el("span", "playing", "VIENDO")); }
     b.append(lg, el("span", "cname", c.name), el("span", "cmeta", cardMeta(c)));
-    b.setAttribute("aria-label", c.name + ", " + (down ? "sin señal" : c.group));
+    b.setAttribute("aria-label", c.name + ", " + (down ? "sin señal" : c.group + ", " + cardMeta(c)));
     b.onclick = () => pick(c, list);
     return b;
   }
   /* ---------- Nacionales y países ---------- */
   const natCountry = () => region().cc || CONFIG.paisPrincipal;
-  const countryName = (cc) => (CONFIG.paises.find((p) => p.cc === cc) || {}).nombre || cc.toUpperCase();
   // Para cada canal nacional: sus señales oficiales en la lista; si no hay ninguna que funcione, el link a su sitio.
   function nationals() {
     const cc = natCountry(), used = new Set(), items = [];
@@ -1071,7 +1061,7 @@ const CONFIG = {
   }
   function webMeta(nombre, cc) {
     const on = onAir({ cc, name: nombre });
-    return flag(cc) + (on ? " " + on[2] : " · En su sitio oficial");
+    return on ? "Ahora: " + on[2] : "En su sitio oficial";
   }
   function webCard(d, cc) {
     const a = el("a", "card web"); a.href = d.web; a.target = "_blank"; a.rel = "noopener";
@@ -1087,29 +1077,28 @@ const CONFIG = {
     if (!items.length) return null;
     const cc = natCountry();
     const s = el("section", "shelf nat");
-    const h = el("div", "shelf-head"); h.append(el("h2", "", "Nacionales de " + countryName(cc) + " " + flag(cc)));
+    const h = el("div", "shelf-head"); h.append(el("h2", "", "📡 TV abierta"));
     const rail = el("div", "rail"); rail.setAttribute("role", "list");
     const playable = items.filter((x) => x.c).map((x) => x.c);
     items.forEach((x) => rail.append(x.c ? card(x.c, playable) : webCard(x.web, x.cc)));
     s.append(h, rail);
     return s;
   }
-  function countryShelf() {
-    const s = el("section", "shelf");
-    const h = el("div", "shelf-head"); h.append(el("h2", "", "Países"));
-    const counts = {};
-    for (const c of channels) if (c.cc) counts[c.cc] = (counts[c.cc] || 0) + 1;
-    const rail = el("div", "rail"); rail.setAttribute("role", "list");
-    const tiles = [{ id: "spa", label: "En español", icon: "🌎" }, ...CONFIG.paises.map((p) => ({ id: p.cc, label: p.nombre, icon: flag(p.cc), n: counts[p.cc] }))];
-    for (const t of tiles) {
-      const b = el("button", "card country"); b.type = "button";
-      if (t.id === state.region) b.setAttribute("aria-current", "true");
-      b.append(el("div", "logo", t.icon), el("span", "cname", t.label), el("span", "cmeta", t.id === state.region ? "Viendo ahora" : region().id === "spa" && t.n ? t.n + " en español" : "Ver canales"));
-      b.setAttribute("aria-label", "Canales de " + t.label);
-      b.onclick = () => selectRegion(t.id);
-      rail.append(b);
+  // «¿Qué quieres ver?»: un botón grande por categoría.
+  function catGrid() {
+    const s = el("section", "cats");
+    s.append(el("h2", "", "¿Qué quieres ver?"));
+    const grid = el("div", "cat-grid");
+    for (const [g, n] of catList()) {
+      if (g === OTROS) continue;
+      const i = catInfo(g), b = el("button", "cat"); b.type = "button";
+      b.style.setProperty("--h", i.color);
+      b.append(el("span", "ci", i.icono), el("b", "", g), el("span", "", n === 1 ? "1 canal" : n + " canales"));
+      b.setAttribute("aria-label", g + ", " + n + " canales");
+      b.onclick = () => setFilter(g);
+      grid.append(b);
     }
-    s.append(h, rail);
+    s.append(grid);
     return s;
   }
   function shelf(title, list, key) {
@@ -1158,18 +1147,20 @@ const CONFIG = {
   }
 
   function renderChips() {
-    const items = [["all", "Inicio"], ["fav", "★ Favoritos"]];
-    if (state.recent.length) items.push(["recent", "Recientes"]);
-    catList().forEach(([g]) => items.push([g, g]));
-    const nDown = downList().length;
-    if (nDown) items.push(["down", "Inactivos " + nDown]);
+    const items = [["all", "‹ Inicio"], ["fav", "⭐ Favoritos"]];
+    if (state.recent.length) items.push(["recent", "🕘 Recientes"]);
+    catList().forEach(([g]) => items.push([g, catTitle(g)]));
+    if (filter === "down") items.push(["down", "Canales inactivos"]);
     if (!items.some(([k]) => k === filter)) filter = "all";
+    $("#chips").hidden = filter === "all" && !query;
     $("#chips").replaceChildren(...items.map(([k, label]) => {
       const b = el("button", "chip", label); b.type = "button";
       b.setAttribute("aria-pressed", String(k === filter));
       b.onclick = () => setFilter(k);
       return b;
     }));
+    const on = $("#chips [aria-pressed='true']");
+    if (on && !$("#chips").hidden) requestAnimationFrame(() => { const r = $("#chips"); r.scrollLeft = on.offsetLeft - (r.clientWidth - on.offsetWidth) / 2; });
   }
   function setFilter(k) {
     filter = k; shown = CONFIG.porPagina; render();
@@ -1192,16 +1183,16 @@ const CONFIG = {
     }
     if (filter === "all" && !query) {
       const parts = [];
-      if (loadFailed && !regionText) parts.push(Object.assign(el("p", "msg err", "No pudimos cargar los canales de «" + region().nombre + "». Mientras tanto, te dejamos videos de prueba."), { style: "margin-top:14px" }));
+      if (loadFailed && !regionText) parts.push(Object.assign(el("p", "msg err", "No pudimos cargar los canales. Revisa tu conexión: mientras tanto, te dejamos videos de prueba."), { style: "margin-top:14px" }));
+      if (channels.length) parts.push(catGrid());
       const nat = nationalShelf(); if (nat) parts.push(nat);
       const rec = chanList(state.recent);
-      if (rec.length) parts.push(shelf("Seguir viendo", rec, "recent"));
+      if (rec.length) parts.push(shelf("🕘 Seguir viendo", rec, "recent"));
       const favs = chanList(state.favs);
-      if (favs.length) parts.push(shelf("Tus favoritos", favs, "fav"));
-      if (channels.length) parts.push(countryShelf());
+      if (favs.length) parts.push(shelf("⭐ Tus favoritos", favs, "fav"));
       const act = activeList();
       catList().forEach(([g], i) => {
-        parts.push(shelf(g, act.filter((c) => c.cats.includes(g)), g));
+        parts.push(shelf(catTitle(g), act.filter((c) => c.cats.includes(g)), g));
         if (i === 1) { const p = promo(); if (p) parts.push(p); }
       });
       if (!channels.length) parts.push(el("div", "empty", "No hay canales en esta región."));
@@ -1221,7 +1212,7 @@ const CONFIG = {
     const arr = visible();
     const head = el("div", "shelf");
     const h = el("div", "shelf-head");
-    h.append(el("h2", "", query ? "Resultados" : filter === "fav" ? "Tus favoritos" : filter === "recent" ? "Vistos recientemente" : filter === "down" ? "Canales inactivos" : filter));
+    h.append(el("h2", "", query ? "Resultados" : filter === "fav" ? "Tus favoritos" : filter === "recent" ? "Vistos recientemente" : filter === "down" ? "Canales inactivos" : catTitle(filter)));
     head.append(h, el("p", "count", arr.length === 1 ? "1 canal" : arr.length.toLocaleString("es-CL") + " canales"));
     if (filter === "down" && !query) head.append(el("p", "down-note", downNote(arr.length)));
     const grid = el("div", "grid");
@@ -1346,7 +1337,7 @@ const CONFIG = {
   $("#altBtn").onclick = () => { if (current && !multiOn && curOrder.length > 1) tune(current, attempt, (curK + 1) % curOrder.length, true); };
   function updateNow(c) {
     $("#nowName").textContent = c.name;
-    $("#nowGroup").textContent = [flag(c.cc), c.cats.join(", ")].filter(Boolean).join(" ");
+    $("#nowGroup").textContent = c.cats.join(", ");
     $("#nowLogo").replaceWith(Object.assign(logoEl(c), { id: "nowLogo" }));
     const fav = isFav(c);
     $("#favBtn").setAttribute("aria-pressed", String(fav));
@@ -1499,17 +1490,8 @@ const CONFIG = {
   document.querySelectorAll("[data-close]").forEach((b) => (b.onclick = () => b.closest("dialog").close()));
   document.querySelectorAll("dialog").forEach((d) => d.addEventListener("click", (e) => { if (e.target === d) d.close(); }));
 
-  function openSheet() { renderRegions(); renderMine(); $("#addMsg").hidden = true; $("#sheet").showModal(); }
-  $("#regionBtn").onclick = openSheet;
+  function openSheet() { renderMine(); $("#addMsg").hidden = true; $("#sheet").showModal(); }
   $("#listsBtn").onclick = openSheet;
-  function renderRegions() {
-    $("#regions").replaceChildren(...allRegions().map((r) => {
-      const b = el("button", "chip", (r.cc ? flag(r.cc) + " " : "") + r.nombre); b.type = "button";
-      b.setAttribute("aria-pressed", String(r.id === state.region));
-      b.onclick = () => { $("#sheet").close(); selectRegion(r.id); };
-      return b;
-    }));
-  }
   let tab = "url";
   document.querySelectorAll("[data-tab]").forEach((b) => (b.onclick = () => {
     tab = b.dataset.tab;
@@ -1598,7 +1580,6 @@ const CONFIG = {
     $("#plusSheet").showModal();
   }
   $("#plusBtn").onclick = () => openPlus();
-  $("#heroPlus").onclick = () => openPlus();
 
   async function sha256(t) {
     const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
@@ -1619,7 +1600,6 @@ const CONFIG = {
   function paintPlus() {
     $("#plusBtn").classList.toggle("on", isPlus());
     $("#plusLabel").textContent = isPlus() ? "Plus ✓" : "Plus";
-    $("#heroPlus").hidden = isPlus();
   }
   function renderThemes() {
     $("#themes").replaceChildren(...[["auto", "Automático"], ["light", "Claro"], ["dark", "Oscuro"]].map(([k, l]) => {
