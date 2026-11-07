@@ -19,7 +19,7 @@ tv/
 | Parte | Detalle |
 | --- | --- |
 | Portada | Filas por categoría (Noticias, Deportes, Música, Infantil…), «Seguir viendo» y «Tus favoritos». |
-| Nacionales | Primera fila de la portada: los canales de señal abierta del país (en «En español», de Chile). Si la lista trae su señal oficial, se ve en la app; si no, la tarjeta abre su transmisión en vivo en el sitio oficial (TVN, Canal 13, Mega, Chilevisión, 24 Horas, TV+). Se editan en `CONFIG.nacionales`. |
+| Nacionales | Primera fila de la portada: los canales de señal abierta del país (en «En español», de Chile). Si la lista trae su señal oficial, se ve en la app; si no, la tarjeta abre su transmisión en vivo en el sitio oficial. Hay links oficiales comprobados para Chile, Argentina, México, Colombia, Perú y España (los de España suelen verse solo desde España). Se editan en `CONFIG.nacionales`. |
 | Países | Fila de banderas con 21 países (Latinoamérica, España y EE. UU.). Al tocar uno se cargan sus canales, con sus nacionales primero. Se editan en `CONFIG.paises`. |
 | Buscador | Busca en todos los canales, sin importar tildes. |
 | Reproductor | Canal anterior/siguiente, favoritos, pantalla completa, AirPlay e imagen en imagen. |
