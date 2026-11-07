@@ -105,10 +105,9 @@ carpeta raíz `tv/`, rama `claude/exciting-pasteur-f1q3l4`).
 
 En el iPhone: Safari → Compartir → «Agregar a pantalla de inicio».
 
-Como la cuenta de Vercel no tiene GitHub conectado, **los cambios no se publican solos**:
-después de editar, pídele a Claude que vuelva a publicar, o conecta GitHub en Vercel
-(Account Settings → Authentication) y vincula el repositorio al proyecto para que cada
-cambio se publique automáticamente.
+**Se publica sola:** el proyecto está vinculado al repositorio. Cada cambio que se sube a la
+rama `claude/exciting-pasteur-f1q3l4` (por ejemplo, editar el `CONFIG` desde github.com en
+el iPhone) queda en línea en menos de un minuto.
 
 ## Lo legal
 
