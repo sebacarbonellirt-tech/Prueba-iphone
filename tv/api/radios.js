@@ -15,13 +15,24 @@ const MAXIMO = 80;
 const CONOCIDAS = {
   cl: ["biobio", "cooperativa", "adn", "agricultura", "pudahuel", "rock and pop", "futuro", "corazon", "los40", "concierto",
     "duna", "infinita", "imagina", "carolina", "tiempo", "romantica", "sonar", "play fm", "positiva", "oasis", "universo",
-    "fm dos", "fmdos", "horizonte", "zero", "uno", "candela", "disney", "activa", "t13 radio", "13 radio", "beethoven", "uchile", "universidad de chile"],
+    "fm dos", "fmdos", "horizonte", "zero", "uno", "candela", "activa", "radioactiva", "t13 radio", "13 radio", "beethoven", "uchile", "universidad de chile"],
 };
 
 const norm = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 // Nombre para juntar repetidas: «RADIO COOPERATIVA», «Cooperativa 93.3» y «Cooperativa» son la misma.
-const clave = (s) => norm(s).replace(/\b(radio|fm|am|chile|cl|en vivo|online|oficial|santiago)\b/g, " ")
+const clave = (s) => norm(s).replace(/&/g, " and ").replace(/\b(radio|fm|am|chile|cl|en vivo|online|oficial|santiago|principales|uc|m)\b/g, " ")
   .replace(/\d+([.,]\d+)?/g, " ").replace(/[^a-z0-9]/g, "");
+
+// Nombre para mostrar: sin «cl» ni signos sueltos al final, y sin MAYÚSCULAS sostenidas.
+function limpio(s) {
+  let n = String(s).replace(/\s+/g, " ").replace(/[\s|.\-–]+$/g, "").replace(/\s+(cl|m)$/i, "").trim();
+  if (n === n.toUpperCase() && /[A-Z]{4}/.test(n)) n = n.toLowerCase().replace(/(^|\s)\S/g, (c) => c.toUpperCase());
+  return n;
+}
+// Logos que en realidad son el ícono de otro sitio.
+const LOGO_MALO = /(wix\.com|zeno\.fm|twitter\.com|gstatic\.com|googleusercontent\.com)\//i;
+// Links con permiso que vence (dejan de sonar a los minutos) o mal copiados.
+const LINK_MALO = (u) => /[?&](zt|dpssid|sid)=/i.test(u) || u.indexOf("http", 8) > 0;
 
 // Algunos servidores de radio también atienden por https: se usa esa versión (la web es https).
 function seguro(u) {
@@ -52,10 +63,11 @@ function elegir(lista, cc) {
     if (/\b(xxx|adult|porn|erotic)/i.test(s.name + " " + s.tags)) continue;
     const url = seguro(String(s.url_resolved || s.url || "").trim());
     const k = clave(s.name);
-    if (!url || !k) continue;
-    const r = { nombre: String(s.name).replace(/\s+/g, " ").trim(), url, logo: /^https:\/\//i.test(s.favicon || "") ? s.favicon : "",
+    if (!url || !k || LINK_MALO(url)) continue;
+    const logo = /^https:\/\//i.test(s.favicon || "") && !LOGO_MALO.test(s.favicon) ? s.favicon : "";
+    const r = { nombre: limpio(s.name), url, logo,
       hls: !!s.hls, votos: (s.clickcount || 0) + (s.votes || 0) / 10 };
-    const g = grupos.get(k);
+    const g = grupos.get(k) || [...grupos.values()].find((x) => x.url === url);
     if (!g) grupos.set(k, r);
     else {
       if (!g.logo && r.logo) g.logo = r.logo;

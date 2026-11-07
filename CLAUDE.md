@@ -32,8 +32,11 @@ de la app, nunca los canales) y con auspiciadores. Es una PWA instalable en iPho
 | `tv/index.html` | Toda la web (HTML + CSS + JS en un archivo). Se configura en el bloque `CONFIG` del principio. |
 | `tv/api/estado.js` | Función de Vercel: prueba las señales de una lista y devuelve las caídas (caché 6 h). |
 | `tv/api/guia.js` | Función de Vercel: guía de programación (IPTV-EPG.org + EPGShare01, XMLTV), caché 3 h. Descarta rellenos tipo «No Data». |
-| `tv/vercel.json` | `maxDuration` 60 s para las dos funciones. |
-| `tv/sw.js` | Service worker, red primero (`CACHE = "antena-tv-v5"`; subir el número si cambian archivos base). |
+| `tv/api/radios.js` | Función de Vercel: radios en vivo del país desde Radio Browser (https MP3/AAC, sin repetidas, probadas), caché 12 h. |
+| `tv/api/canal.js` | Función de Vercel: link para compartir `/c/<canal>` (vista previa con nombre y logo, luego abre `/?canal=<canal>`). |
+| `tv/og.png` | Imagen general de vista previa (1200×630). |
+| `tv/vercel.json` | `maxDuration` de las funciones y el rewrite `/c/:id` → `api/canal`. |
+| `tv/sw.js` | Service worker, red primero (`CACHE = "antena-tv-v6"`; subir el número si cambian archivos base). |
 | `tv/herramientas/codigos.html` | Crea códigos de activación de Plus y su versión cifrada (SHA-256). |
 | `tv/README.md` | Documentación completa para el dueño (mantenerla al día con cada cambio). |
 
@@ -46,6 +49,12 @@ de la app, nunca los canales) y con auspiciadores. Es una PWA instalable en iPho
   botón grande por categoría; los chips de arriba solo aparecen dentro de una categoría o al buscar.
 - Fila **TV abierta** (`CONFIG.nacionales[paisPrincipal]`, hoy Chile): si la lista trae la señal oficial se ve en la
   app; si no, la tarjeta abre el sitio oficial del canal (links comprobados para CL, AR, MX, CO, PE, ES).
+- **Compartir**: botón junto a la estrella; link `/c/<slug>` (slug = tvg-id o nombre; radios `radio-<nombre>`,
+  igual en `slug()` de index.html y api/canal.js). Abre la tele en ese canal (`?canal=`, `openShared()`).
+- **Radios**: categoría «Radios» (`CONFIG.radios.pais`), se suman como canales con `radio: true` (no se prueban
+  desde el teléfono, no se juntan con canales de tele, se tocan directo sin hls.js si no son HLS).
+- **Estadísticas**: script de Vercel Web Analytics en el `<head>` (hay que activarlo en el panel de Vercel).
+  Los eventos por canal son de pago: no usarlos sin permiso.
 - Buscador global sin tildes. Favoritos, recientes, AirPlay, imagen en imagen.
 - **Canales inactivos** automáticos, sin esperar a que alguien toque el canal: el teléfono prueba en segundo plano
   todas las señales apenas abre la tele (`probeRegion()`, lo visible primero, 6 a la vez, resultados 1 h), más la
@@ -66,9 +75,8 @@ de la app, nunca los canales) y con auspiciadores. Es una PWA instalable en iPho
    (van en `CONFIG.whatsapp` o en `pago` de cada plan).
 2. **Borrar el código de prueba** `ANT-PRUEBA-2026` (primer hash de `CONFIG.plus.codigos`) antes de vender.
 3. Ideas ya propuestas y aún no hechas: compartir un canal por WhatsApp (link directo + imagen de vista previa),
-   Chromecast, sección de radios en vivo, modo Smart TV (control remoto), cobro automático con Mercado Pago,
-   control de códigos en servidor (límite de pantallas), página de términos y privacidad, estadísticas de
-   visitas (Vercel Web Analytics gratis), dominio propio (cuesta dinero: pedir permiso).
+   Chromecast, modo Smart TV (control remoto), cobro automático con Mercado Pago,
+   control de códigos en servidor (límite de pantallas), página de términos y privacidad, dominio propio (cuesta dinero: pedir permiso).
 
 ## Cómo probar
 

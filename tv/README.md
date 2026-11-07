@@ -21,8 +21,10 @@ tv/
 | Portada | Un saludo corto con «Ver un canal ahora», el buscador y **«¿Qué quieres ver?»**: un botón grande con dibujo y color por categoría. Debajo, «TV abierta», «Seguir viendo», «Tus favoritos» y una fila por categoría. |
 | Categorías | Nueve, claras: Noticias, Deportes, Películas, Series, Música, Infantil, Entretención, Cultura y Religión (más «Más canales» para los que no traen categoría). Las de iptv-org se juntan en estas (por ejemplo Clima y Congreso van en Noticias; Cocina y Viajes en Entretención). Nombre, dibujo, color y orden se editan en `CONFIG.categorias`. Al tocar una se ven todos sus canales, con botones arriba para pasar a otra. |
 | TV abierta | Primera fila: los canales de señal abierta de Chile (`paisPrincipal`). Si la lista trae su señal oficial, se ve en la app; si no, la tarjeta abre su transmisión en vivo en el sitio oficial. Hay links oficiales comprobados para Chile, Argentina, México, Colombia, Perú y España (los de España suelen verse solo desde España). Se editan en `CONFIG.nacionales`. |
-| Buscador | Busca en todos los canales, sin importar tildes. |
-| Reproductor | Canal anterior/siguiente, favoritos, pantalla completa, AirPlay e imagen en imagen. Debajo, lo que dan **ahora** (con barra de avance) y **después**. |
+| Buscador | Busca en todos los canales y radios, sin importar tildes. |
+| Radios | Categoría «📻 Radios» con radios chilenas en vivo (Bío-Bío, Cooperativa, ADN, Los 40…). Mientras suena se ve el logo de la radio. Ver «Radios». |
+| Compartir | El botón ⇪ junto a la estrella manda el canal por WhatsApp (o lo que elijas). Ver «Compartir un canal». |
+| Reproductor | Canal anterior/siguiente, favoritos, **compartir**, pantalla completa, AirPlay e imagen en imagen. Debajo, lo que dan **ahora** (con barra de avance) y **después**. |
 | Señal de respaldo | Si un canal viene más de una vez en la lista, se muestra una sola tarjeta y las otras señales quedan de respaldo: si una falla o no arranca en 15 segundos, pasa sola a la siguiente. El botón «⇄ 1/2» junto a «En vivo» cambia de señal a mano. |
 | Guía | Al tocar «Guía ›» se abre la programación del canal. «Ahora» y «Después» son gratis; la guía completa de hoy y mañana es de Plus (`CONFIG.guia.soloPlus`). |
 | Tarjetas | El programa que están dando (si hay guía); si no, «En vivo» («En vivo a ciertas horas» si no transmite todo el día). |
@@ -43,6 +45,31 @@ servidor). Se juntan en una tarjeta cuando tienen el mismo `tvg-id`, o el mismo 
 Al reproducir se prueban en orden: primero las que no han fallado y las https. Un canal solo
 pasa a «Canales inactivos» cuando **todas** sus señales fallan. El tiempo de espera antes de
 cambiar de señal es `STALL_MS` en `index.html`.
+
+## Compartir un canal
+
+Cada canal y cada radio tiene su link, por ejemplo `https://antena-tv.vercel.app/c/tvn-cl` o
+`…/c/radio-biobio-chile`. Al pegarlo en WhatsApp se ve una vista previa con el nombre y el logo
+del canal (o la imagen general `og.png` si no tiene logo). Al tocarlo, la tele se abre en ese
+canal (en iPhone hay que tocar ▶ una vez, porque Safari no deja empezar con sonido solo).
+Lo arma `api/canal.js`; `vercel.json` manda los links `/c/…` ahí. En el iPhone el botón abre el
+menú de compartir del teléfono; en un computador copia el link.
+
+## Radios
+
+`api/radios.js` (función de Vercel) saca las radios de Chile del directorio público y gratuito
+[Radio Browser](https://www.radio-browser.info), donde cada radio publica su propia señal. Deja solo
+las que se escuchan en iPhone (MP3/AAC por https), junta las repetidas, prueba que respondan y pone
+primero las más conocidas (lista `CONOCIDAS` en ese archivo). Vercel guarda la respuesta 12 horas.
+El país se cambia en `CONFIG.radios.pais` (vacío = sin radios).
+
+## Estadísticas de visitas
+
+La página trae el script de **Vercel Web Analytics** (gratis, sin cookies). Muestra cuánta gente
+entra, desde qué país, con qué teléfono y de dónde llegó. Para verlas: vercel.com → proyecto
+`antena-tv` → pestaña **Analytics** (la primera vez hay que tocar «Enable»; en el plan gratis no
+cuesta nada). Contar qué canal mira cada uno («eventos») es del plan pagado de Vercel, así que no
+se usa.
 
 ## Guía de programación
 
@@ -145,6 +172,7 @@ atrae público. Más adelante puedes ofrecerles un lugar destacado.
 | `regiones` | De dónde salen los canales (hoy, todos los canales en español de iptv-org). |
 | `paisPrincipal`, `nacionales` | De qué país es la fila «TV abierta» y qué canales lleva (hay listos para cl, ar, mx, co, pe y es). |
 | `categorias` | Nombre, dibujo (`icono`), color y orden de las categorías. |
+| `radios` | País de las radios (`pais: "cl"`; vacío = sin radios). |
 | `ocultar` | Nombres o links de señales a retirar. |
 | `auspiciadores` | Banners publicitarios. |
 | `plus` | Nombre, planes, precios, links de pago, beneficios y códigos. |
