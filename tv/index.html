@@ -188,6 +188,8 @@ p { margin: 0; }
 .shelf { padding-block: 14px 4px; }
 .shelf-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
 .shelf-head h2 { font-size: 1.25rem; font-weight: 800; }
+.back { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; margin-top: 12px; padding: 0 14px 0 10px; border: 1.5px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font-weight: 700; font-size: .92rem; cursor: pointer; }
+.back svg { width: 18px; height: 18px; }
 .shelf-head button { border: 0; background: none; color: var(--accent); font-weight: 700; font-size: .88rem; cursor: pointer; padding: 6px 0; }
 .rail { display: grid; grid-auto-flow: column; grid-auto-columns: 148px; gap: 10px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; margin-inline: -16px; padding-inline: 16px; scroll-padding-inline: 16px; padding-bottom: 4px; }
 .rail::-webkit-scrollbar { display: none; }
@@ -1228,14 +1230,22 @@ const CONFIG = {
     $("#chips").replaceChildren(...items.map(([k, label]) => {
       const b = el("button", "chip", label); b.type = "button";
       b.setAttribute("aria-pressed", String(k === filter));
-      b.onclick = () => setFilter(k);
+      b.onclick = () => (k === "all" ? goHome() : setFilter(k));
       return b;
     }));
     const on = $("#chips [aria-pressed='true']");
     if (on && !$("#chips").hidden) requestAnimationFrame(() => { const r = $("#chips"); r.scrollLeft = on.offsetLeft - (r.clientWidth - on.offsetWidth) / 2; });
   }
+  // Al entrar a una categoría se agrega un paso al historial: así «atrás» del teléfono (o deslizar
+  // desde el borde en iPhone) vuelve al inicio, igual que el botón «Volver».
   function setFilter(k) {
-    filter = k; shown = CONFIG.porPagina; render();
+    const was = filter;
+    filter = k; shown = CONFIG.porPagina;
+    try {
+      if (k !== "all" && was === "all" && !query) history.pushState({ antena: k }, "");
+      else if (k !== "all" && history.state && history.state.antena) history.replaceState({ antena: k }, "");
+    } catch {}
+    render();
     const top = $(".tools").getBoundingClientRect().top + scrollY - 70;
     if (scrollY > top) scrollTo({ top, behavior: "smooth" });
   }
@@ -1282,14 +1292,18 @@ const CONFIG = {
       return;
     }
     const arr = visible();
+    const back = el("button", "back"); back.type = "button";
+    back.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Volver al inicio';
+    back.onclick = goHome;
     const head = el("div", "shelf");
     const h = el("div", "shelf-head");
     h.append(el("h2", "", query ? "Resultados" : filter === "fav" ? "Tus favoritos" : filter === "recent" ? "Vistos recientemente" : filter === "down" ? "Canales inactivos" : catTitle(filter)));
-    head.append(h, el("p", "count", arr.length === 1 ? "1 canal" : arr.length.toLocaleString("es-CL") + " canales"));
+    const unit = filter === "Radios" && !query ? ["radio", "radios"] : ["canal", "canales"];
+    head.append(h, el("p", "count", arr.length === 1 ? "1 " + unit[0] : arr.length.toLocaleString("es-CL") + " " + unit[1]));
     if (filter === "down" && !query) head.append(el("p", "down-note", downNote(arr.length)));
     const grid = el("div", "grid");
     arr.slice(0, shown).forEach((c) => grid.append(card(c, arr)));
-    const parts = [head];
+    const parts = [back, head];
     const p = promo(); if (p && arr.length > 12) parts.push(p);
     parts.push(grid);
     if (!arr.length) parts.push(el("div", "empty", filter === "fav" && !query ? "Toca la estrella mientras ves un canal para guardarlo aquí." : "No encontramos canales con ese nombre."));
@@ -1558,6 +1572,16 @@ const CONFIG = {
   $("#nowProg").onclick = openGuide;
   $("#guidePlus").onclick = () => { $("#guideSheet").close(); openPlus("La guía completa es parte de Plus: toda la programación de hoy y mañana."); };
   $("#multiExit").onclick = exitMulti;
+
+  function goHome() {
+    if (history.state && history.state.antena) { history.back(); return; } // popstate hace el resto
+    showHome();
+  }
+  function showHome() {
+    filter = "all"; query = ""; shown = CONFIG.porPagina; $("#q").value = "";
+    render(); scrollTo({ top: 0, behavior: "smooth" });
+  }
+  addEventListener("popstate", () => { if (filter !== "all" || query) showHome(); });
 
   /* ---------- Buscador ---------- */
   let qTimer;
