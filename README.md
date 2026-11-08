@@ -6,6 +6,9 @@ sin pagar suscripciones ni comisiones de plataforma de tienda.
 
 > **Otra tienda en este repositorio:** [`empleo/`](empleo/) es **LaPega**, cursos para
 > conseguir trabajo en Chile, con calculadora de sueldo líquido gratis. Ver `empleo/README.md`.
+>
+> **Juego en este repositorio:** [`overdrive/`](overdrive/) es **OVERDRIVE**, prototipo de juego
+> móvil Idle de autos deportivos con carreras estratégicas. Ver `overdrive/README.md`.
 
 ## Qué incluye
 
