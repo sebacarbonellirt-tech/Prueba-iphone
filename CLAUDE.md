@@ -53,6 +53,8 @@ de la app, nunca los canales) y con auspiciadores. Es una PWA instalable en iPho
   igual en `slug()` de index.html y api/canal.js). Abre la tele en ese canal (`?canal=`, `openShared()`).
 - **Radios**: categoría «Radios» (`CONFIG.radios.pais`), se suman como canales con `radio: true` (no se prueban
   desde el teléfono, no se juntan con canales de tele, se tocan directo sin hls.js si no son HLS).
+- **Extras** (`CONFIG.extras`): canales sueltos oficiales y gratis (LiveNOW from FOX y FOX Weather, inglés, de EE. UU.).
+  El dueño pidió agregar un Fox pirata «para probar» y luego romper la regla: se rechazó; no hacerlo.
 - **Estadísticas**: script de Vercel Web Analytics en el `<head>` (hay que activarlo en el panel de Vercel).
   Los eventos por canal son de pago: no usarlos sin permiso.
 - Buscador global sin tildes. Favoritos, recientes, AirPlay, imagen en imagen.

@@ -388,6 +388,12 @@ const CONFIG = {
     { nombre: "Religión", icono: "🙏", color: 255 },
     { nombre: "Radios", icono: "📻", color: 190 },
   ],
+  // Canales extra, solo señales GRATIS y OFICIALES publicadas por su propio dueño (nunca copias de canales de pago).
+  // «grupo» = categoría de iptv-org (News, Weather, Sports, Music…).
+  extras: [
+    { nombre: "LiveNOW from FOX", id: "LiveNOWfromFOX.us", grupo: "News", logo: "https://i.imgur.com/1JnyzHv.png", url: "https://fox-foxnewsnow-vizio.amagi.tv/playlist.m3u8" },
+    { nombre: "FOX Weather", id: "FoxWeather.us", grupo: "Weather", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Fox_Weather_logo.svg/960px-Fox_Weather_logo.svg.png", url: "https://247wlive.foxweather.com/stream/index.m3u8" },
+  ],
   // Radios en vivo (api/radios.js, del directorio público Radio Browser). pais: "" = sin radios.
   radios: { pais: "cl" },
   porFila: 24,       // canales por fila en la portada
@@ -890,7 +896,7 @@ const CONFIG = {
   function rebuild() {
     const groups = new Map();
     channels = []; urlMap = new Map();
-    const sources = [...state.lists.map((l) => [l.text, l.id]), [regionText, "region"], [radioText, "radio"]];
+    const sources = [...state.lists.map((l) => [l.text, l.id]), [regionText, "region"], [extrasText, "extra"], [radioText, "radio"]];
     if (loadFailed && !regionText) sources.push([DEMO, "demo"]);
     for (const [t, id] of sources) for (const c of parseM3U(t || "", id)) {
       if (urlMap.has(c.url)) continue;
@@ -916,6 +922,8 @@ const CONFIG = {
      Llegan del servidor ya revisadas (cada 12 h) y se suman como canales de la categoría «Radios».
      No se prueban desde el teléfono: muchas no dejan leerse desde otra página, pero igual suenan. */
   let radioText = "";
+  const extrasText = "#EXTM3U\n" + (CONFIG.extras || []).filter((x) => x && /^https:\/\//i.test(x.url || "")).map((x) =>
+    '#EXTINF:-1 tvg-id="' + (x.id || "") + '" tvg-logo="' + (x.logo || "") + '" group-title="' + (x.grupo || "") + '",' + x.nombre + "\n" + x.url).join("\n");
   const directUrls = new Set(); // radios que no son HLS: se tocan directo, sin hls.js
   function radiosM3U(list) {
     directUrls.clear();

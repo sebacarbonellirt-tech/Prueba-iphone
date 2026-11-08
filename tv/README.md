@@ -172,6 +172,7 @@ atrae público. Más adelante puedes ofrecerles un lugar destacado.
 | `regiones` | De dónde salen los canales (hoy, todos los canales en español de iptv-org). |
 | `paisPrincipal`, `nacionales` | De qué país es la fila «TV abierta» y qué canales lleva (hay listos para cl, ar, mx, co, pe y es). |
 | `categorias` | Nombre, dibujo (`icono`), color y orden de las categorías. |
+| `extras` | Canales sueltos que se suman a la lista: **solo señales gratis y oficiales de su propio dueño** (hoy LiveNOW from FOX y FOX Weather, en inglés). |
 | `radios` | País de las radios (`pais: "cl"`; vacío = sin radios). |
 | `ocultar` | Nombres o links de señales a retirar. |
 | `auspiciadores` | Banners publicitarios. |
