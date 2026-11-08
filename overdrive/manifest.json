@@ -1,0 +1,16 @@
+{
+  "name": "OVERDRIVE",
+  "short_name": "OVERDRIVE",
+  "description": "Construye tu garaje, mejora tus autos y gana carreras con estrategia.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07090c",
+  "theme_color": "#07090c",
+  "lang": "es",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
