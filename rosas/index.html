@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a0508">
+<title>Rosas</title>
+<style>
+  :root { --bg1:#2a0710; --bg2:#0d0204; --text:#ffe6ea; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; overflow:hidden; background:var(--bg2); }
+  body {
+    background: radial-gradient(ellipse at 50% 40%, var(--bg1) 0%, var(--bg2) 75%);
+    font-family: Georgia, "Times New Roman", serif;
+    color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+  }
+  canvas { position:fixed; inset:0; width:100%; height:100%; display:block; }
+  .hint {
+    position:fixed; left:0; right:0; bottom:calc(24px + env(safe-area-inset-bottom));
+    text-align:center; font-size:14px; letter-spacing:.2em; text-transform:uppercase;
+    opacity:0; transition:opacity 1.5s ease; pointer-events:none;
+    text-shadow:0 2px 12px rgba(0,0,0,.8);
+  }
+  .hint.show { opacity:.75; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hint" id="hint">Toca para más rosas 🌹</div>
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  function resize() {
+    W = innerWidth; H = innerHeight;
+    canvas.width = W * DPR; canvas.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  addEventListener('resize', resize); resize();
+
+  // ---------- Rose sprites (pre-rendered for speed) ----------
+  const PALETTES = [
+    { dark:'#5c0010', mid:'#b0001e', light:'#ff3b55' },  // rojo
+    { dark:'#4a0012', mid:'#8f0020', light:'#e0213f' },  // carmesí
+    { dark:'#7a1840', mid:'#d6407a', light:'#ff9cc2' },  // rosa
+    { dark:'#8c3a52', mid:'#f07ca0', light:'#ffd1e0' },  // rosa pálido
+    { dark:'#6b0a2a', mid:'#c4124f', light:'#ff5c8a' },  // fucsia
+  ];
+  const SPRITE = 160;
+
+  function petal(c, r, w) {
+    c.beginPath();
+    c.moveTo(0, 0);
+    c.bezierCurveTo(-w, -r * 0.25, -w * 1.15, -r * 0.95, 0, -r);
+    c.bezierCurveTo(w * 1.15, -r * 0.95, w, -r * 0.25, 0, 0);
+    c.closePath();
+  }
+
+  function makeRose(p, withLeaves) {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = SPRITE;
+    const c = cv.getContext('2d');
+    c.translate(SPRITE / 2, SPRITE / 2);
+    const R = SPRITE * 0.36;
+
+    if (withLeaves) {
+      for (const a of [-0.6, 2.4, 4.0]) {
+        c.save(); c.rotate(a);
+        const g = c.createLinearGradient(0, 0, 0, -R * 1.35);
+        g.addColorStop(0, '#0f3d12'); g.addColorStop(1, '#3f8f2e');
+        c.fillStyle = g;
+        c.beginPath(); c.moveTo(0, -R * 0.4);
+        c.quadraticCurveTo(-R * 0.35, -R * 0.95, 0, -R * 1.38);
+        c.quadraticCurveTo(R * 0.35, -R * 0.95, 0, -R * 0.4);
+        c.fill();
+        c.strokeStyle = 'rgba(10,40,10,.6)'; c.lineWidth = 1;
+        c.beginPath(); c.moveTo(0, -R * 0.45); c.lineTo(0, -R * 1.3); c.stroke();
+        c.restore();
+      }
+    }
+
+    const layers = [
+      { n: 6, r: R,        w: R * 0.62, off: 0 },
+      { n: 5, r: R * 0.78, w: R * 0.52, off: 0.5 },
+      { n: 5, r: R * 0.58, w: R * 0.42, off: 0.15 },
+      { n: 4, r: R * 0.40, w: R * 0.32, off: 0.8 },
+      { n: 3, r: R * 0.24, w: R * 0.22, off: 0.3 },
+    ];
+    layers.forEach((L, li) => {
+      for (let i = 0; i < L.n; i++) {
+        c.save();
+        c.rotate(L.off + i * Math.PI * 2 / L.n + (Math.random() - 0.5) * 0.25);
+        const g = c.createRadialGradient(0, -L.r * 0.15, 1, 0, -L.r * 0.5, L.r);
+        g.addColorStop(0, p.dark);
+        g.addColorStop(0.55, p.mid);
+        g.addColorStop(1, p.light);
+        c.fillStyle = g;
+        c.shadowColor = 'rgba(0,0,0,.45)';
+        c.shadowBlur = 6 - li;
+        petal(c, L.r, L.w);
+        c.fill();
+        c.shadowBlur = 0;
+        c.strokeStyle = 'rgba(40,0,8,.35)'; c.lineWidth = 0.8;
+        c.stroke();
+        c.restore();
+      }
+    });
+
+    // Espiral central
+    c.strokeStyle = p.dark; c.lineWidth = 1.6; c.lineCap = 'round';
+    c.beginPath();
+    for (let t = 0; t < Math.PI * 5; t += 0.15) {
+      const rr = 1 + t * R * 0.012;
+      const x = Math.cos(t) * rr, y = Math.sin(t) * rr;
+      t === 0 ? c.moveTo(x, y) : c.lineTo(x, y);
+    }
+    c.stroke();
+    return cv;
+  }
+
+  function makePetal(p) {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = 40;
+    const c = cv.getContext('2d');
+    c.translate(20, 32);
+    const g = c.createLinearGradient(0, 0, 0, -28);
+    g.addColorStop(0, p.dark); g.addColorStop(1, p.light);
+    c.fillStyle = g;
+    petal(c, 28, 14);
+    c.fill();
+    return cv;
+  }
+
+  const roses = [], petals = [];
+  PALETTES.forEach(p => {
+    roses.push(makeRose(p, true));
+    roses.push(makeRose(p, false));
+    petals.push(makePetal(p));
+  });
+
+  // ---------- Particles ----------
+  const items = [];
+  const MAX = reduced ? 120 : (W * H < 500000 ? 380 : 600);
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pick = arr => arr[(Math.random() * arr.length) | 0];
+
+  function spawn(x, y, vx, vy, isPetal) {
+    if (items.length >= MAX) items.shift();
+    const base = Math.min(W, H);
+    items.push({
+      x, y, vx, vy,
+      rot: rand(0, Math.PI * 2),
+      vr: rand(-1.5, 1.5),
+      size: isPetal ? rand(10, 22) : rand(base * 0.07, base * 0.16),
+      img: isPetal ? pick(petals) : pick(roses),
+      phase: rand(0, Math.PI * 2),
+      sway: rand(15, 45),
+      life: 0,
+      flip: rand(0.6, 1.4),
+      petal: isPetal,
+    });
+  }
+
+  function burst(cx, cy, n, power) {
+    for (let i = 0; i < n; i++) {
+      const a = rand(0, Math.PI * 2);
+      const s = rand(power * 0.25, power);
+      spawn(cx, cy, Math.cos(a) * s, Math.sin(a) * s - power * 0.25, Math.random() < 0.3);
+    }
+  }
+
+  // Entrada: una gran explosión de rosas + lluvia inmediata
+  function intro() {
+    const n = reduced ? 60 : 220;
+    burst(W / 2, H / 2, n, Math.max(W, H) * 1.1);
+    for (let i = 0; i < (reduced ? 30 : 120); i++) {
+      spawn(rand(0, W), rand(-H, 0), rand(-20, 20), rand(60, 160), Math.random() < 0.4);
+    }
+  }
+
+  let rainAcc = 0;
+  const RAIN_PER_SEC = reduced ? 6 : 28;
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+
+    rainAcc += RAIN_PER_SEC * dt;
+    while (rainAcc >= 1) {
+      rainAcc--;
+      spawn(rand(-40, W + 40), -80, rand(-15, 15), rand(50, 140), Math.random() < 0.45);
+    }
+
+    ctx.clearRect(0, 0, W, H);
+    for (let i = items.length - 1; i >= 0; i--) {
+      const o = items[i];
+      o.life += dt;
+      // Arrastre y gravedad suave
+      const drag = Math.pow(0.12, dt);
+      o.vx *= drag;
+      o.vy = o.vy * drag + (o.petal ? 180 : 270) * dt; // velocidad terminal ~85-130 px/s
+      o.x += (o.vx + Math.sin(o.life * 1.6 + o.phase) * o.sway) * dt;
+      o.y += o.vy * dt;
+      o.rot += o.vr * dt;
+
+      if (o.y - o.size > H + 40) { items.splice(i, 1); continue; }
+
+      const sx = Math.cos(o.life * o.flip + o.phase); // giro 3D aparente
+      ctx.save();
+      ctx.translate(o.x, o.y);
+      ctx.rotate(o.rot);
+      ctx.scale(o.petal ? sx : 0.85 + 0.15 * sx, 1);
+      ctx.globalAlpha = Math.min(1, o.life * 3);
+      const s = o.size * (o.petal ? 1 : 1.6);
+      ctx.drawImage(o.img, -s / 2, -s / 2, s, s);
+      ctx.restore();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function onTap(e) {
+    const t = e.touches ? e.touches[0] : e;
+    burst(t.clientX, t.clientY, reduced ? 15 : 45, Math.min(W, H) * 0.9);
+  }
+  addEventListener('pointerdown', onTap);
+
+  intro();
+  requestAnimationFrame(frame);
+  setTimeout(() => document.getElementById('hint').classList.add('show'), 3500);
+})();
+</script>
+</body>
+</html>
