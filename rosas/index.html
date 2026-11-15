@@ -84,7 +84,7 @@
     border-radius:4px; pointer-events:none;
   }
   .letter-body {
-    position:absolute; inset:0; padding:12cqw 8cqw 30cqw;
+    position:absolute; inset:0; padding:10cqw 8cqw 32cqw;
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2.5cqw;
   }
   .l-to { font-family:Georgia, serif; font-style:italic; font-size:6cqw; letter-spacing:.08em; color:#a3324a; }
@@ -98,13 +98,12 @@
   .l-msg { font-family:Georgia, serif; font-size:5.6cqw; line-height:1.45; color:#7a1a32; }
 
   .poodle {
-    position:absolute; bottom:4cqw; width:25cqw; height:auto;
+    position:absolute; bottom:4cqw; width:22cqw; height:auto;
     opacity:0; transform:translateY(20px) scale(.6);
   }
   .poodle.left  { left:4cqw; }
   .poodle.right { right:4cqw; }
-  .poodle.right svg { transform:scaleX(-1); }
-  .poodle svg { display:block; width:100%; height:auto; overflow:visible; }
+  .poodle img { display:block; width:100%; height:auto; filter:drop-shadow(0 3px 4px rgba(122,26,50,.18)); }
   #letter.ready .poodle { animation:pop .6s cubic-bezier(.2,1.6,.4,1) forwards, hop 2.4s ease-in-out .9s infinite; }
   #letter.ready .poodle.right { animation-delay:.25s, 2.1s; }
   @keyframes pop { to { opacity:1; transform:none; } }
@@ -130,8 +129,8 @@
           <div class="l-div">♥</div>
           <div class="l-msg">Todas estas rosas<br>son para ti 🌹</div>
         </div>
-        <div class="poodle left" id="poodleL"></div>
-        <div class="poodle right" id="poodleR"></div>
+        <div class="poodle left"><img src="poodle.png" alt="Poodle"></div>
+        <div class="poodle right"><img src="poodle.png" alt="Poodle"></div>
       </div>
     </div>
     <div class="env-front"></div>
@@ -340,41 +339,6 @@
     burst(t.clientX, t.clientY, reduced ? 15 : 45, Math.min(W, H) * 0.9);
   }
   addEventListener('pointerdown', onTap);
-
-  // ---------- Poodles (SVG) ----------
-  function poodle(F, S, bow) {
-    const fur = `
-      <polygon points="22,55 28,51 16,28 11,32"/>
-      <circle cx="12" cy="25" r="9"/><circle cx="7" cy="20" r="6"/><circle cx="16" cy="18" r="6"/>
-      <circle cx="30" cy="55" r="14"/><circle cx="38" cy="48" r="11"/><circle cx="36" cy="63" r="11"/>
-      <ellipse cx="55" cy="60" rx="22" ry="11"/>
-      <circle cx="72" cy="50" r="15"/><circle cx="80" cy="58" r="12"/><circle cx="67" cy="63" r="11"/><circle cx="79" cy="43" r="11"/>
-      <rect x="40" y="64" width="8" height="30" rx="3"/><circle cx="44" cy="95" r="8"/>
-      <rect x="77" y="64" width="8" height="30" rx="3"/><circle cx="81" cy="95" r="8"/>
-      <circle cx="87" cy="30" r="12"/>
-      <ellipse cx="101" cy="35" rx="11" ry="6.5"/>
-      <circle cx="85" cy="16" r="10"/><circle cx="78" cy="21" r="7"/><circle cx="93" cy="13" r="7"/><circle cx="87" cy="7" r="6"/>`;
-    const ear = `<circle cx="79" cy="34" r="8"/><circle cx="78" cy="44" r="7.5"/><circle cx="82" cy="40" r="7"/>`;
-    return `<svg viewBox="-2 -4 118 112" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <g fill="${S}">
-        <rect x="33" y="62" width="7" height="30" rx="3"/><circle cx="36.5" cy="94" r="7"/>
-        <rect x="70" y="62" width="7" height="30" rx="3"/><circle cx="73.5" cy="94" r="7"/>
-      </g>
-      <g fill="${F}" stroke="${S}" stroke-width="3.5" stroke-linejoin="round">${fur}</g>
-      <g fill="${F}">${fur}</g>
-      <g fill="${S}" stroke="${S}" stroke-width="2">${ear}</g>
-      <circle cx="111" cy="34" r="3.4" fill="#2b1a1a"/>
-      <circle cx="93" cy="28" r="2.6" fill="#2b1a1a"/><circle cx="93.9" cy="27.2" r=".9" fill="#fff"/>
-      <circle cx="96" cy="37" r="3.2" fill="#ff8fa8" opacity=".55"/>
-      <path d="M104 39 q3 3 6 0" fill="none" stroke="#2b1a1a" stroke-width="1.3" stroke-linecap="round"/>
-      <g transform="translate(80 5) rotate(-15)">
-        <path d="M0 0 L-8 -5 L-8 5 Z M0 0 L8 -5 L8 5 Z" fill="${bow}"/>
-        <circle r="2.4" fill="${bow}" stroke="rgba(0,0,0,.2)" stroke-width=".6"/>
-      </g>
-    </svg>`;
-  }
-  document.getElementById('poodleL').innerHTML = poodle('#fffaf5', '#d6c4b6', '#ff5c8a');
-  document.getElementById('poodleR').innerHTML = poodle('#f2c79b', '#c48c5a', '#e0213f');
 
   // ---------- Sobre que se abre ----------
   function openLetter() {
