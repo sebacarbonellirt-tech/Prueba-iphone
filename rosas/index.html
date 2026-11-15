@@ -113,6 +113,36 @@
     80% { transform:translateY(0); }
     88% { transform:translateY(-6%); }
   }
+
+  /* ---------- Rompecabezas ---------- */
+  #puzzle { position:fixed; inset:0; z-index:8; transition:opacity .9s ease; touch-action:none; }
+  #puzzle.hide { opacity:0; pointer-events:none; }
+  .pz-head {
+    position:absolute; left:0; right:0; top:calc(env(safe-area-inset-top) + 4vh);
+    text-align:center; pointer-events:none; padding:0 16px;
+  }
+  .pz-title {
+    font-family:"Great Vibes", "Snell Roundhand", cursive; color:#ffd9e2;
+    font-size:clamp(44px, 12vw, 72px); line-height:1.05;
+    text-shadow:0 0 18px rgba(255,80,120,.45);
+  }
+  .pz-sub { margin-top:6px; font-style:italic; font-size:15px; letter-spacing:.06em; color:#f5b8c6; opacity:.85; }
+  .pz-foot {
+    position:absolute; left:0; right:0; bottom:calc(env(safe-area-inset-bottom) + 22px);
+    text-align:center; font-size:12px; letter-spacing:.25em; text-transform:uppercase;
+    color:#f5b8c6; opacity:.6; pointer-events:none;
+  }
+  #board { position:absolute; }
+  #board svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+  #board .guide { pointer-events:none; }
+  .piece { pointer-events:none; transition:transform .35s cubic-bezier(.2,1.3,.4,1), filter .2s; }
+  .piece path.hit { pointer-events:visiblePainted; cursor:grab; touch-action:none; }
+  .piece.drag { transition:filter .2s; filter:drop-shadow(0 14px 18px rgba(0,0,0,.55)); }
+  .piece.drag path.hit { cursor:grabbing; }
+  .piece.placed path.hit { pointer-events:none; }
+  #board.done { animation:beat 1.1s ease-in-out 2; }
+  #board.done .piece { filter:drop-shadow(0 0 18px rgba(255,70,110,.8)); }
+  @keyframes beat { 0%,100% { transform:scale(1); } 20% { transform:scale(1.1); } 40% { transform:scale(.97); } 60% { transform:scale(1.06); } }
 </style>
 </head>
 <body>
@@ -139,6 +169,14 @@
   </div>
 </div>
 <div id="final"></div>
+<div id="puzzle">
+  <div class="pz-head">
+    <div class="pz-title" id="pzTitle">Arma el corazón</div>
+    <div class="pz-sub" id="pzSub">arrastra cada pieza a su lugar</div>
+  </div>
+  <div id="board"></div>
+  <div class="pz-foot">♥</div>
+</div>
 <script>
 (() => {
   const canvas = document.getElementById('c');
@@ -293,7 +331,7 @@
     }
   }
 
-  let rainAcc = 0;
+  let rainAcc = 0, started = false;
   const RAIN_PER_SEC = reduced ? 6 : 28;
 
   let last = performance.now();
@@ -301,10 +339,10 @@
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
 
-    rainAcc += RAIN_PER_SEC * dt;
+    rainAcc += (started ? RAIN_PER_SEC : 5) * dt;
     while (rainAcc >= 1) {
       rainAcc--;
-      spawn(rand(-40, W + 40), -80, rand(-15, 15), rand(50, 140), Math.random() < 0.45);
+      spawn(rand(-40, W + 40), -80, rand(-15, 15), rand(50, 140), !started || Math.random() < 0.45);
     }
 
     ctx.clearRect(0, 0, W, H);
@@ -335,6 +373,7 @@
   }
 
   function onTap(e) {
+    if (!started) return;
     const t = e.touches ? e.touches[0] : e;
     burst(t.clientX, t.clientY, reduced ? 15 : 45, Math.min(W, H) * 0.9);
   }
@@ -380,10 +419,118 @@
     }, 2900);
   }
 
-  intro();
+  // ---------- Rompecabezas del corazón ----------
+  const HEART = 'M100 178 C 30 130, 0 92, 20 52 C 38 16, 84 16, 100 50 C 116 16, 162 16, 180 52 C 200 92, 170 130, 100 178 Z';
+  // Borde con "pestaña" de rompecabezas de (x1,y1) a (x2,y2); sign elige el lado de la pestaña
+  function edge(x1, y1, x2, y2, sign) {
+    const dx = x2 - x1, dy = y2 - y1, nx = -dy * sign, ny = dx * sign;
+    const P = (t, n) => `${(x1 + dx * t + nx * n).toFixed(2)},${(y1 + dy * t + ny * n).toFixed(2)}`;
+    return ` L${P(0.38, 0)} C${P(0.22, 0.34)} ${P(0.78, 0.34)} ${P(0.62, 0)} L${P(1, 0)}`;
+  }
+  const E = {
+    vTop:  [100, 0, 100, 100, -1], vBot:  [100, 100, 100, 200, 1],
+    hLeft: [0, 100, 100, 100, -1], hRight:[100, 100, 200, 100, 1],
+  };
+  const fwd = k => edge(...E[k]);
+  const rev = k => { const [a, b, c, d, sg] = E[k]; return edge(c, d, a, b, -sg); };
+  const CELLS = [
+    { d: `M-20,-20 L100,-20 L100,0${fwd('vTop')}${rev('hLeft')} L-20,100 Z`, cx: 50, cy: 50 },
+    { d: `M100,-20 L220,-20 L220,100 L200,100${rev('hRight')}${rev('vTop')} Z`, cx: 150, cy: 50 },
+    { d: `M-20,100 L0,100${fwd('hLeft')}${fwd('vBot')} L100,220 L-20,220 Z`, cx: 50, cy: 150 },
+    { d: `M100,220 L100,200${rev('vBot')}${fwd('hRight')} L220,100 L220,220 Z`, cx: 150, cy: 150 },
+  ];
+
+  function setupPuzzle() {
+    const board = document.getElementById('board');
+    const vw = innerWidth, vh = innerHeight;
+    const B = Math.min(vw * 0.62, vh * 0.34, 280), q = B / 2, k = B / 200;
+    const bx = (vw - B) / 2, by = Math.max(vh * 0.52 - B / 2, vh * 0.22);
+    Object.assign(board.style, { left: bx + 'px', top: by + 'px', width: B + 'px', height: B + 'px' });
+
+    const svgNS = 'http://www.w3.org/2000/svg';
+    let defs = '<defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff4d6d"/><stop offset="1" stop-color="#b3001e"/></linearGradient>';
+    CELLS.forEach((c, i) => defs += `<clipPath id="cp${i}"><path d="${c.d}"/></clipPath>`);
+    defs += '<clipPath id="hc"><path d="' + HEART + '"/></clipPath></defs>';
+    const seams = `M100,0${fwd('vTop')}${fwd('vBot')} M0,100${fwd('hLeft')}${fwd('hRight')}`;
+    board.innerHTML = `<svg class="guide" viewBox="0 0 200 200">${defs}
+      <path d="${HEART}" fill="rgba(255,120,150,.08)" stroke="rgba(255,190,205,.55)" stroke-width="1.6" stroke-dasharray="5 4"/>
+      <g clip-path="url(#hc)"><path d="${seams}" fill="none" stroke="rgba(255,190,205,.4)" stroke-width="1.2" stroke-dasharray="4 4"/></g></svg>`;
+
+    // Posiciones desordenadas alrededor del tablero
+    const wide = vw > vh * 0.9;
+    let spots = wide
+      ? [[bx - q * 1.1, by + q * 0.5], [bx + B + q * 1.1, by + q * 0.5], [bx - q * 1.1, by + B - q * 0.5], [bx + B + q * 1.1, by + B - q * 0.5]]
+      : [[vw * 0.27, by - q * 0.62], [vw * 0.73, by - q * 0.62], [vw * 0.27, by + B + q * 0.68], [vw * 0.73, by + B + q * 0.68]];
+    spots = spots.sort(() => Math.random() - 0.5);
+
+    let placed = 0, zTop = 10;
+    CELLS.forEach((c, i) => {
+      const el = document.createElementNS(svgNS, 'svg');
+      el.setAttribute('viewBox', '0 0 200 200');
+      el.classList.add('piece');
+      el.innerHTML = `<g clip-path="url(#cp${i})">
+          <path class="hit" d="${HEART}" fill="url(#hg)"/>
+          <path d="${c.d}" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.4" clip-path="url(#hc)"/>
+          <path d="M60 50 q-18 6 -24 28" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="5" stroke-linecap="round" clip-path="url(#hc)"/>
+        </g>`;
+      el.style.transformOrigin = `${c.cx * k}px ${c.cy * k}px`;
+      board.appendChild(el);
+      // Mantener la pieza dentro de la pantalla
+      const tx0 = Math.min(Math.max(spots[i][0], q * 0.55), vw - q * 0.55) - (bx + c.cx * k);
+      const ty0 = Math.min(Math.max(spots[i][1], q * 0.55), vh - q * 0.55) - (by + c.cy * k);
+      const st = { x: tx0, y: ty0, r: rand(-22, 22) };
+      const apply = () => el.style.transform = `translate(${st.x}px, ${st.y}px) rotate(${st.r}deg)`;
+      apply();
+
+      const hit = el.querySelector('path.hit');
+      let start = null;
+      hit.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        hit.setPointerCapture(e.pointerId);
+        start = { px: e.clientX, py: e.clientY, x: st.x, y: st.y };
+        el.style.zIndex = ++zTop;
+        el.classList.add('drag');
+        st.r = 0; apply();
+      });
+      hit.addEventListener('pointermove', e => {
+        if (!start) return;
+        st.x = start.x + e.clientX - start.px;
+        st.y = start.y + e.clientY - start.py;
+        apply();
+      });
+      const end = () => {
+        if (!start) return;
+        start = null;
+        el.classList.remove('drag');
+        if (Math.hypot(st.x, st.y) < B * 0.16) {
+          st.x = 0; st.y = 0; st.r = 0; apply();
+          el.classList.add('placed'); el.style.zIndex = 1;
+          if (navigator.vibrate) navigator.vibrate(15);
+          if (++placed === CELLS.length) solved();
+        }
+      };
+      hit.addEventListener('pointerup', end);
+      hit.addEventListener('pointercancel', end);
+    });
+
+    function solved() {
+      document.getElementById('pzTitle').textContent = '¡Lo lograste!';
+      document.getElementById('pzSub').textContent = '♥';
+      setTimeout(() => board.classList.add('done'), 350);
+      setTimeout(() => document.getElementById('puzzle').classList.add('hide'), 2200);
+      setTimeout(start, 2500);
+    }
+  }
+
+  function start() {
+    started = true;
+    intro();
+    setTimeout(openLetter, 2300);
+    setTimeout(() => document.getElementById('hint').classList.add('show'), 7000);
+  }
+
   requestAnimationFrame(frame);
-  setTimeout(openLetter, 2300);
-  setTimeout(() => document.getElementById('hint').classList.add('show'), 7000);
+  setupPuzzle();
 })();
 </script>
 </body>
