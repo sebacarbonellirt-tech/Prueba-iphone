@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ruleta.css">
 <style>
   :root { --bg1:#2a0710; --bg2:#0d0204; --text:#ffe6ea; }
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -177,6 +178,7 @@
   <div id="board"></div>
   <div class="pz-foot">♥</div>
 </div>
+<script src="ruleta.js"></script>
 <script>
 (() => {
   const canvas = document.getElementById('c');
@@ -436,6 +438,7 @@
       env.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(60vh) rotate(8deg)', opacity: 0 }],
         { duration: 800, easing: 'ease-in', fill: 'forwards' });
       setTimeout(() => letter.classList.add('ready'), 700);
+      setTimeout(() => window.Ruleta && Ruleta.showLauncher(), 2200);
     }, 2900);
   }
 
@@ -550,7 +553,14 @@
   }
 
   requestAnimationFrame(frame);
-  setupPuzzle();
+  // Atajo: .../#ruleta abre directamente "Nuestra próxima aventura"
+  if (location.hash === '#ruleta') {
+    document.getElementById('puzzle').classList.add('hide');
+    start();
+    setTimeout(() => window.Ruleta && Ruleta.open(), 400);
+  } else {
+    setupPuzzle();
+  }
 })();
 </script>
 </body>
